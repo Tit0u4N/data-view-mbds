@@ -8,6 +8,9 @@ cols_to_keep <- c("id", "title", "genres", "dateGlobal", "category",
 
 data <- read.csv(input_csv, stringsAsFactors = FALSE)
 
+# remove the lines where the colonne isTBA is TRUE
+data <- data[data$isTBA == FALSE, ]
+
 
 cols_found <- intersect(cols_to_keep, colnames(data))
 cols_missing <- setdiff(cols_to_keep, colnames(data))
@@ -16,6 +19,10 @@ if (length(cols_missing) > 0) {
   warning(paste("Col didn't found in the CSV :", paste(colonnes_manquantes, collapse = ", ")))
 }
 
+# remove the lines when one of these columns is NA or empty
+for (col in cols_found) {
+    data <- data[!is.na(data[[col]]) & data[[col]] != "", ]
+}
 
 data_filtre <- data[, cols_found, drop = FALSE]
 
