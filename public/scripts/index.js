@@ -1,11 +1,13 @@
 import ratingByGamePricing from "./rating-by-game-pricing.js";
 import dateSlider from "./date-slider.js";
+import freePaidTotalGamesEvolution from "./free-paid-total-games-evolution.js";
 
 // Load data and run the visualization
 const data = await d3.csv('./data.csv');
 
 // Initial render
 ratingByGamePricing(data);
+freePaidTotalGamesEvolution(data);
 
 // State
 let lastDateFilteredData = data;
@@ -92,6 +94,7 @@ const applyFilters = (dataToFilter) => {
 const updateVisualization = () => {
     const finalData = applyFilters(lastDateFilteredData);
     ratingByGamePricing(finalData);
+    freePaidTotalGamesEvolution(data);
 };
 
 // Initialize Slider
