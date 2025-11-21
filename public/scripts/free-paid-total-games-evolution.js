@@ -61,6 +61,4 @@ export default async (data) => {
     //add or replace in svg
     svg.html('');
     svg.node().append(streamgraph);
-
-
 }

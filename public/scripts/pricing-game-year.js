@@ -5,8 +5,8 @@ export default function pricingGameYear(data) {
     const width = 1000 - margin.left - margin.right; // Increased width
     const height = 600 - margin.top - margin.bottom; // Increased height
 
-    // Container
-    const container = d3.select("#data-view-2");
+    // Container (div wrapper)
+    const container = d3.select("#pricing-game-year");
 
     // Clear previous content
     container.selectAll("*").remove();
@@ -19,33 +19,20 @@ export default function pricingGameYear(data) {
         .style("color", "#2c3e50")
         .style("margin-bottom", "20px");
 
-    // Add Controls Container
-    const controls = container.append("div")
+
+
+    // Create SVG Container for the chart
+    const svgContainer = container.append("div")
         .style("display", "flex")
-        .style("justify-content", "center")
-        .style("align-items", "center")
-        .style("margin-bottom", "10px");
+        .style("justify-content", "center");
 
-    controls.append("label")
-        .text("Zoomer sur : ")
-        .style("margin-right", "10px")
-        .style("font-family", "Roboto, sans-serif")
-        .style("font-size", "16px"); // Larger font
-
-    const dropdown = controls.append("select")
-        .style("padding", "8px")
-        .style("font-size", "16px") // Larger font
-        .style("border-radius", "4px")
-        .style("border", "1px solid #ccc");
-
-    dropdown.append("option").text("Année").attr("value", "year");
-    dropdown.append("option").text("Prix").attr("value", "price");
-
-    // Append SVG
-    const svg = container.append("svg")
+    // Create SVG with proper dimensions
+    const mainSvg = svgContainer.append("svg")
         .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
-        .append("g")
+        .attr("height", height + margin.top + margin.bottom);
+
+    // Create main group with transform
+    const svg = mainSvg.append("g")
         .attr("transform", `translate(${margin.left},${margin.top})`);
 
     // 1. Process Data
@@ -62,7 +49,6 @@ export default function pricingGameYear(data) {
         return year !== null && d.category && !isNaN(price) && price > 0; // Exclude free games
     });
 
-    // Group by Year and Genre
     const nestedMap = new Map();
     validData.forEach(d => {
         const year = getYear(d);
@@ -98,8 +84,7 @@ export default function pricingGameYear(data) {
     const x = d3.scaleTime().domain(xDomain).range([0, width]); // scaleTime
     const y = d3.scaleLinear().domain(yDomain).range([height, 0]);
 
-    // Navigation Scales (Horizontal for both)
-    const navXScale = d3.scaleTime().domain(xDomain).range([0, width]); // scaleTime
+    // Navigation Scale for Price (Horizontal)
     const navYScale = d3.scaleLinear().domain(yDomain).range([0, width]); // Price mapped horizontally
 
     const r = d3.scaleSqrt()
@@ -177,14 +162,22 @@ export default function pricingGameYear(data) {
         .style("font-size", "14px")
         .text("Prix Moyen (€/$)");
 
-    // 6. Dynamic Brush
-    let currentMode = "year"; // 'year' or 'price'
-    let yearSelection = [0, width];
+    // 6. Price Slider
     let priceSelection = [0, width];
 
     const brushHeight = 50; // Larger brush area
     const brushGroup = svg.append("g")
         .attr("transform", `translate(0, -${margin.top - 20})`);
+
+    // Add label for price slider
+    svg.append("text")
+        .attr("x", width / 2)
+        .attr("y", -margin.top + 10)
+        .style("text-anchor", "middle")
+        .style("font-size", "14px")
+        .style("font-family", "Roboto, sans-serif")
+        .style("fill", "#555")
+        .text("Filtre de prix");
 
     // Brush Background Track
     brushGroup.append("rect")
@@ -247,34 +240,12 @@ export default function pricingGameYear(data) {
 
     // Initial Render
     updateBrushAxis();
-    brushNode.call(brush.move, yearSelection);
-
-    // Dropdown Listener
-    dropdown.on("change", function () {
-        currentMode = this.value;
-        updateBrushAxis();
-
-        // Switch selection to the stored one for the new mode
-        const targetSelection = currentMode === "year" ? yearSelection : priceSelection;
-
-        // Temporarily disable listener to avoid double update loop
-        brush.on("brush end", null);
-        brushNode.call(brush.move, targetSelection);
-        brush.on("brush end", brushed);
-
-        // Update handles position manually since we disabled the listener
-        updateHandles(targetSelection);
-    });
+    brushNode.call(brush.move, priceSelection);
 
     function updateBrushAxis() {
         brushAxisGroup.selectAll("*").remove();
-        if (currentMode === "year") {
-            brushAxisGroup.call(d3.axisBottom(navXScale).ticks(width / 80).tickSize(0).tickPadding(10));
-            brushAxisGroup.select(".domain").remove(); // Remove axis line for cleaner look
-        } else {
-            brushAxisGroup.call(d3.axisBottom(navYScale).ticks(10).tickSize(0).tickPadding(10));
-            brushAxisGroup.select(".domain").remove();
-        }
+        brushAxisGroup.call(d3.axisBottom(navYScale).ticks(10).tickSize(0).tickPadding(10));
+        brushAxisGroup.select(".domain").remove();
         brushAxisGroup.selectAll("text").style("fill", "#777").style("font-family", "Roboto, sans-serif");
     }
 
@@ -285,11 +256,7 @@ export default function pricingGameYear(data) {
         updateHandles(selection);
 
         // Store selection
-        if (currentMode === "year") {
-            yearSelection = selection;
-        } else {
-            priceSelection = selection;
-        }
+        priceSelection = selection;
 
         updateChart();
     }
@@ -303,30 +270,22 @@ export default function pricingGameYear(data) {
     }
 
     function updateChart() {
-        // 1. Calculate Year Domain (Date objects)
-        const xMin = navXScale.invert(yearSelection[0]);
-        const xMax = navXScale.invert(yearSelection[1]);
-
-        // 2. Calculate Price Domain
+        // Calculate Price Domain from slider
         const yMin = navYScale.invert(priceSelection[0]);
         const yMax = navYScale.invert(priceSelection[1]);
 
-        // 3. Update Main Scales
-        x.domain([xMin, xMax]);
+        // Update Y Scale (price axis)
         y.domain([yMin, yMax]);
 
-        // 4. Update Axes
-        xAxis.call(d3.axisBottom(x)); // Default time formatting
+        // Update Y Axis
         yAxis.call(d3.axisLeft(y));
 
-        // 5. Update Bubbles
+        // Update Bubbles
         bubbles
-            .attr("cx", d => x(d.date))
             .attr("cy", d => y(d.avgPrice))
             .style("display", d => {
-                const inX = d.date >= xMin && d.date <= xMax;
                 const inY = d.avgPrice >= yMin && d.avgPrice <= yMax;
-                return (inX && inY) ? "block" : "none";
+                return inY ? "block" : "none";
             });
     }
 
