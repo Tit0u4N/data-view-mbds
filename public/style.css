@@ -75,9 +75,9 @@ main {
 
 section {
     display: none;
-    max-width: 600px;
     text-align: center;
     font-size: 1.1rem;
+    padding-left: 10rem;
 }
 
 section.active {
