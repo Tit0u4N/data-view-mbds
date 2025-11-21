@@ -61,7 +61,7 @@ export default async (data) => {
     const calculatedHeight = (cellWidth * categories.length) + 50;
     const height = Math.min(calculatedHeight, 520); // Limit height to 520px max
 
-    const svg = d3.select('#scene')
+    const svg = d3.select('#rating-by-game-pricing')
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)
         .html("") // Clear previous content

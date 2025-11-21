@@ -5,7 +5,7 @@ export default async (data) => {
     // Define dimension and SVG container
     const width = 1250
     const height = 1050;
-    const svg = d3.select('#data-view-4 #scene').attr("width", width).attr("height", height);
+    const svg = d3.select('#free-paid-total-games-evolution').attr("width", width).attr("height", height);
 
 
     // parse date

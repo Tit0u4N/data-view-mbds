@@ -94,7 +94,7 @@ const applyFilters = (dataToFilter) => {
 const updateVisualization = () => {
     const finalData = applyFilters(lastDateFilteredData);
     ratingByGamePricing(finalData);
-    freePaidTotalGamesEvolution(data);
+    freePaidTotalGamesEvolution(finalData);
 };
 
 // Initialize Slider
