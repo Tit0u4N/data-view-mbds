@@ -234,10 +234,227 @@ main {
 
 /* Footer */
 footer {
+    align-items: center;
+    gap: 10px;
+}
+
+.year-inputs {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.year-input-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.year-input-group label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #555;
+    white-space: nowrap;
+}
+
+.year-input-group input[type="number"] {
+    width: 80px;
+    padding: 6px 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    font-family: system-ui, sans-serif;
+    text-align: center;
+    transition: border-color 0.2s;
+}
+
+.year-input-group input[type="number"]:focus {
+    outline: none;
+    border-color: #222;
+    box-shadow: 0 0 0 2px rgba(34, 34, 34, 0.1);
+}
+
+.year-input-group input[type="number"]::-webkit-inner-spin-button,
+.year-input-group input[type="number"]::-webkit-outer-spin-button {
+    opacity: 1;
+}
+
+#date-slider {
+    flex: 1;
+    min-width: 200px;
+    display: flex;
+    padding: 0;
+}
+
+.filter-row {
+    display: flex;
+    gap: 20px;
+    flex-wrap: nowrap;
+    align-items: center;
+    width: 100%;
+}
+
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: auto;
+}
+
+.filter-group label {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.filter-group select {
+    padding: 5px 10px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    font-size: 0.9rem;
+    background-color: white;
+    cursor: pointer;
+}
+
+/* Multiselect Styles */
+.multiselect {
+    width: 200px;
+    position: relative;
+}
+
+.selectBox {
+    position: relative;
+}
+
+.selectBox select {
+    width: 100%;
+}
+
+.overSelect {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    cursor: pointer;
+}
+
+#checkboxes {
+    display: none;
+    border: 1px solid #ccc;
+    position: absolute;
+    background-color: white;
+    z-index: 100;
+    width: 100%;
+    max-height: 300px;
+    overflow-y: auto;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+#checkboxes label {
+    display: block;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-weight: normal;
+}
+
+#checkboxes label:hover {
+    background-color: #f0f0f0;
+}
+
+#checkboxes input {
+    margin-right: 10px;
+}
+
+/* Responsive pour les petits écrans */
+@media (max-width: 1000px) {
+    #filters-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    #date-slider {
+        width: 100%;
+    }
+
+    .filter-row {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+}
+
+/* Main Content */
+main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.graphs-container {
+    width: 100%;
+    max-width: 1200px;
+    display: flex;
+    justify-content: center;
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+}
+
+/* D3 Elements */
+.axis path,
+.axis line {
+    fill: none;
+    stroke: black;
+    shape-rendering: crispEdges;
+}
+
+.axis text {
+    font-family: sans-serif;
+    font-size: 11px;
+}
+
+.links line {
+    stroke: #999;
+    stroke-opacity: 0.6;
+}
+
+.nodes circle {
+    stroke: #fff;
+    stroke-width: 1.5px;
+}
+
+/* Footer */
+footer {
     text-align: center;
     padding: 1rem;
     font-size: 0.9rem;
     color: #777;
     background: #f8f9fa;
     border-top: 1px solid #eee;
+}
+
+/* Color Indicator in Multiselect */
+.color-indicator {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 8px;
+    margin-left: 4px;
+    vertical-align: middle;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+#checkboxes label {
+    display: flex;
+    align-items: center;
+    padding: 5px;
+}
+
+#checkboxes input {
+    margin-right: 5px;
 }

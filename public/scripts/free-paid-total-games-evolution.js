@@ -1,4 +1,5 @@
-import Streamgraph from './utilities/Streamgraph.js';
+import Streamgraph from './utils/streamgraph.js';
+import { getColor } from './utils/color-manager.js';
 
 export default async (data) => {
 
@@ -56,7 +57,8 @@ export default async (data) => {
         height: height,
         xKey: "year",
         xLabel: "Year",
-        yLabel: "Number of games"
+        yLabel: "Number of games",
+        color: (key) => getColor(key)
     });
     //add or replace in svg
     svg.html('');

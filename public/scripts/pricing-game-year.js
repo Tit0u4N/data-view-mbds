@@ -1,3 +1,4 @@
+import { getColor } from "./utils/color-manager.js";
 
 export default function pricingGameYear(data) {
     // Dimensions
@@ -92,18 +93,9 @@ export default function pricingGameYear(data) {
         .range([4, 30]); // Larger bubbles
 
     const genres = Array.from(new Set(aggregatedData.map(d => d.genre))).sort();
-    const color = d3.scaleOrdinal()
-        .domain(genres)
-        .range([
-            "#ffa4d5ff",
-            "#FF0000",
-            "#FFD700",
-            "#32CD32",
-            "#FF8C00",
-            "#1E90FF",
-            "#9400D3",
-            "#00CED1"
-        ]);
+
+    // Use shared color manager
+    const color = (category) => getColor(category);
 
     // 3. Clip Path
     svg.append("defs").append("clipPath")

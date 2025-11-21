@@ -12,9 +12,10 @@ export default function Streamgraph(data, keys, {
     marginLeft = 40,
     xKey = "year",
     xLabel = "Year",
-    yLabel = "Number of games"
+    yLabel = "Number of games",
+    color = d3.scaleOrdinal(d3.schemeTableau10)
 
-} ) {
+}) {
 
     // Stack the data.
     const series = d3.stack()
@@ -33,9 +34,9 @@ export default function Streamgraph(data, keys, {
         .domain(d3.extent(series.flat(2)))
         .rangeRound([height - marginBottom, marginTop]);
 
-    const color = d3.scaleOrdinal()
-        .domain(series.map(d => d.key))
-        .range(d3.schemeTableau10);
+    // If color is a function (like from ColorManager), wrap it or use it directly.
+    // But here we expect a d3 scale or a function that takes a key and returns a color.
+    const colorScale = typeof color === 'function' ? color : d3.scaleOrdinal().domain(series.map(d => d.key)).range(d3.schemeTableau10);
 
     // Construct an area shape.
     const area = d3.area()
@@ -80,11 +81,11 @@ export default function Streamgraph(data, keys, {
         .selectAll()
         .data(series)
         .join("path")
-        .attr("fill", d => color(d.key))
+        .attr("fill", d => colorScale(d.key))
         .attr("d", area)
         .append("title")
         .text(d => d.key);
 
     // Return the chart with the color scale as a property (for the legend).
-    return Object.assign(svg.node(), {scales: {color}});
+    return Object.assign(svg.node(), { scales: { color: colorScale } });
 }
