@@ -18,4 +18,5 @@ dateSlider(data, (filteredData) => {
     // Currently only one view is implemented, so we just call it.
     // In a real app, we would check which view is active.
     ratingByGamePricing(filteredData);
+    freePaidTotalGamesEvolution(data);
 });

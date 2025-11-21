@@ -58,7 +58,9 @@ export default async (data) => {
         xLabel: "Year",
         yLabel: "Number of games"
     });
-    svg.node().appendChild(streamgraph);
+    //add or replace in svg
+    svg.html('');
+    svg.node().append(streamgraph);
 
 
 }
