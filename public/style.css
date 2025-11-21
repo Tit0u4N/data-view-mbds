@@ -75,9 +75,9 @@ main {
 
 section {
     display: none;
-    max-width: 600px;
     text-align: center;
     font-size: 1.1rem;
+    padding-left: 10rem;
 }
 
 section.active {
@@ -95,4 +95,23 @@ footer {
     padding: 1rem;
     font-size: 0.9rem;
     color: #777;
+}
+
+#date-slider {
+    display: flex;
+    justify-content: center;
+    margin: 20px auto;
+    padding: 20px;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    max-width: 900px;
+}
+
+#date-range-label {
+    text-align: center;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+    letter-spacing: 0.5px;
 }
