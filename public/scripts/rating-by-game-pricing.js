@@ -132,6 +132,27 @@ export default async (data) => {
         .on("mousemove", mousemove)
         .on("mouseleave", mouseleave);
 
+    // Add text counts if range is small (<= 15 years)
+    if (years.length <= 15) {
+        svg.selectAll(".count-label")
+            .data(gridData)
+            .enter()
+            .append("text")
+            .attr("class", "count-label")
+            .attr("x", d => x(d.year) + x.bandwidth() / 2)
+            .attr("y", d => y(d.category) + y.bandwidth() / 2)
+            .attr("text-anchor", "middle")
+            .attr("alignment-baseline", "middle")
+            .text(d => d.count > 0 ? d.count : "")
+            .style("font-size", "16px")
+            .style("font-weight", "bold")
+            .style("fill", d => {
+                if (d.rating === undefined) return "#555"; // Gray cell -> dark gray text
+                return d.rating > 3.5 ? "white" : "black"; // Dark cell -> white text, Light cell -> black text
+            })
+            .style("pointer-events", "none");
+    }
+
     // Legend
     const legendHeight = height;
     const legendWidth = 20;
