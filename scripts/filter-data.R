@@ -3,7 +3,7 @@ input_csv <- "scripts/gog_games_dataset.csv"              # Chemin du fichier CS
 output_csv <- "scripts/gog_games_dataset_v2.csv"            # Chemin du fichier CSV de sortie
 cols_to_keep <- c("id", "title", "genres", "dateGlobal", "category",
                   "salesVisibility", "isFree", "currency", "amount",
-                  "baseAmount", "overallAvgRating")       # Liste des colonnes à conserver
+                  "baseAmount", "overallAvgRating","supportedOperatingSystems","type")       # Liste des colonnes à conserver
 
 
 data <- read.csv(input_csv, stringsAsFactors = FALSE)
