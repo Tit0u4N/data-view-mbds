@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8">
-    <title></title>
+    <title>Data View</title>
 
     <!-- import the d3 library -->
     <script type='text/javascript' src='scripts/d3.v5.min.js'></script>
@@ -13,41 +13,56 @@
 </head>
 
 <body>
-    <nav>
-        <button class="active" data-target="data-view-1">Data View 1</button>
-        <button data-target="data-view-2">Data View 2</button>
-        <button data-target="data-view-3">Data View 3</button>
-        <button data-target="data-view-4">Data View 4</button>
-    </nav>
+    <header>
+        <div id="filters-container">
+            <div id="date-controls">
+                <div class="year-inputs">
+                    <div class="year-input-group">
+                        <label for="start-year-input">De :</label>
+                        <input type="number" id="start-year-input" min="1980" max="2030" step="1" />
+                    </div>
+                    <div class="year-input-group">
+                        <label for="end-year-input">À :</label>
+                        <input type="number" id="end-year-input" min="1980" max="2030" step="1" />
+                    </div>
+                </div>
+            </div>
+            <div id="date-slider"></div>
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label for="pricing-filter">Prix :</label>
+                    <select id="pricing-filter">
+                        <option value="all">Tous</option>
+                        <option value="free">Gratuit</option>
+                        <option value="paid">Payant</option>
+                    </select>
+                </div>
+                <div class="filter-group" id="category-filter-container">
+                    <label>Catégories :</label>
+                    <div class="multiselect" id="category-multiselect">
+                        <div class="selectBox" id="selectBox">
+                            <select>
+                                <option>Sélectionner catégories</option>
+                            </select>
+                            <div class="overSelect"></div>
+                        </div>
+                        <div id="checkboxes">
+                            <!-- Checkboxes will be injected here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
 
     <main>
-        <section id="data-view-1" class="active">
-            <h1>Data View 1</h1>
-            <p>Voici la data view 1</p>
-            <div id="date-range-label"></div>
-            <div id="date-slider"></div>
+        <div id="graphs-container">
             <svg id="scene">
                 <g id='links'></g>
                 <g id='labels'></g>
                 <g id='nodes'></g>
             </svg>
-        </section>
-
-        <section id="data-view-2">
-            <h1>Data View 2</h1>
-            <p>Voici la data view 2</p>
-
-        </section>
-
-        <section id="data-view-3">
-            <h1>Data View 3</h1>
-            <p>Voici la data view 3</p>
-        </section>
-
-        <section id="data-view-4">
-            <h1>Data View 4</h1>
-            <p>Voici la data view 4</p>
-        </section>
+        </div>
     </main>
 
     <footer>

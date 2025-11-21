@@ -20,7 +20,15 @@ export default async (data) => {
 
     // Get unique Categories and Years for axes
     const categories = Array.from(new Set(processedData.map(d => d.category))).sort();
-    const years = Array.from(new Set(processedData.map(d => d.year))).sort((a, b) => a - b);
+    const yearSet = Array.from(new Set(processedData.map(d => d.year))).sort((a, b) => a - b);
+
+    // Fill missing years: create continuous range from min to max year
+    const minYear = d3.min(yearSet);
+    const maxYear = d3.max(yearSet);
+    const years = [];
+    for (let year = minYear; year <= maxYear; year++) {
+        years.push(year);
+    }
 
     // Create a map for quick lookup
     const dataMap = new Map();
@@ -45,12 +53,13 @@ export default async (data) => {
     });
 
     // Define dimension and SVG container
-    const margin = { top: 50, right: 150, bottom: 100, left: 150 };
+    const margin = { top: 50, right: 50, bottom: 130, left: 100 }; // Reduced bottom from 200 to 130, left from 150 to 100
     const width = 1250 - margin.left - margin.right;
 
-    // Adjust height to make cells more square-like
+    // Adjust height to make cells more square-like, with max height of 520px
     const cellWidth = width / years.length;
-    const height = (cellWidth * categories.length) + 50;
+    const calculatedHeight = (cellWidth * categories.length) + 50;
+    const height = Math.min(calculatedHeight, 520); // Limit height to 520px max
 
     const svg = d3.select('#scene')
         .attr("width", width + margin.left + margin.right)
@@ -77,7 +86,7 @@ export default async (data) => {
     // Axes
     svg.append("g")
         .attr("transform", `translate(0,${height})`)
-        .call(d3.axisBottom(x).tickValues(x.domain().filter((d, i) => !(i % 2)))) // Show every 2nd year to avoid clutter
+        .call(d3.axisBottom(x)) // Show all years
         .selectAll("text")
         .style("text-anchor", "end")
         .attr("dx", "-.8em")
@@ -133,7 +142,7 @@ export default async (data) => {
         .on("mouseleave", mouseleave);
 
     // Add text counts if range is small (<= 15 years)
-    if (years.length <= 15) {
+    if (years.length <= 25) {
         svg.selectAll(".count-label")
             .data(gridData)
             .enter()
@@ -153,12 +162,26 @@ export default async (data) => {
             .style("pointer-events", "none");
     }
 
-    // Legend
-    const legendHeight = height;
-    const legendWidth = 20;
+    // Legend - Optimized layout (aligned left, compact)
+    const legendWidth = 300;
+    const legendHeight = 25;
+    const legendSpacing = 80; // Reduced from 100 to bring legend closer to heatmap
 
+    // Legend aligned to the left with label on the same line
     const legend = svg.append("g")
-        .attr("transform", `translate(${width + 40}, 0)`);
+        .attr("transform", `translate(0, ${height + legendSpacing})`);
+
+    // Add "Note moyenne" label on the same line as gradient
+    legend.append("text")
+        .attr("x", 10)
+        .attr("y", legendHeight / 2)
+        .text("Note moyenne :")
+        .style("font-size", "14px")
+        .style("alignment-baseline", "middle");
+
+    const labelWidth = 120; // Space for the label
+    const gradientGroup = legend.append("g")
+        .attr("transform", `translate(${labelWidth}, 0)`);
 
     const defs = svg.append("defs");
     const linearGradient = defs.append("linearGradient")
@@ -166,8 +189,8 @@ export default async (data) => {
 
     linearGradient
         .attr("x1", "0%")
-        .attr("y1", "100%")
-        .attr("x2", "0%")
+        .attr("y1", "0%")
+        .attr("x2", "100%")
         .attr("y2", "0%");
 
     linearGradient.selectAll("stop")
@@ -181,49 +204,55 @@ export default async (data) => {
         .attr("offset", function (d) { return d.offset; })
         .attr("stop-color", function (d) { return d.color; });
 
-    legend.append("rect")
+    gradientGroup.append("rect")
         .attr("width", legendWidth)
         .attr("height", legendHeight)
         .style("fill", "url(#linear-gradient)");
 
     const legendScale = d3.scaleLinear()
         .domain([1, 5])
-        .range([legendHeight, 0]);
+        .range([0, legendWidth]);
 
-    const legendAxis = d3.axisRight(legendScale);
+    const legendAxis = d3.axisBottom(legendScale).ticks(5);
 
-    legend.append("g")
-        .attr("transform", `translate(${legendWidth}, 0)`)
+    gradientGroup.append("g")
+        .attr("transform", `translate(0, ${legendHeight})`)
         .call(legendAxis);
 
-    // "No Data" Legend Item
+    // "No Data" Legend Item - positioned after gradient
     const noDataGroup = legend.append("g")
-        .attr("transform", `translate(0, ${legendHeight + 30})`);
+        .attr("transform", `translate(${labelWidth + legendWidth + 20}, 0)`);
+
+    noDataGroup.append("text")
+        .attr("x", 0)
+        .attr("y", legendHeight / 2)
+        .text("Pas de donnée :")
+        .style("font-size", "14px")
+        .style("alignment-baseline", "middle");
 
     noDataGroup.append("rect")
-        .attr("width", legendWidth)
-        .attr("height", legendWidth)
+        .attr("width", legendHeight)
+        .attr("height", legendHeight)
+        .attr('x', 105)
         .style("fill", "#d3d3d3")
         .style("stroke", "#ccc");
 
-    noDataGroup.append("text")
-        .attr("x", legendWidth + 10)
-        .attr("y", 15)
-        .text("Pas de donnée")
-        .style("font-size", "12px")
-        .style("alignment-baseline", "middle");
 
     // Labels
     svg.append("text")
-        .attr("text-anchor", "end")
+        .attr("text-anchor", "middle")
         .attr("x", width / 2)
-        .attr("y", height + 60)
-        .text("Année");
+        .attr("y", height + 60) // Reduced from 60 to bring closer
+        .text("Année")
+        .style("font-size", "14px")
+        .style("font-weight", "600");
 
     svg.append("text")
-        .attr("text-anchor", "end")
+        .attr("text-anchor", "middle")
         .attr("transform", "rotate(-90)")
-        .attr("y", -120)
+        .attr("y", -75) // Reduced from -120 to bring closer to heatmap
         .attr("x", -height / 2)
-        .text("Catégorie");
+        .text("Catégorie")
+        .style("font-size", "14px")
+        .style("font-weight", "600");
 }
