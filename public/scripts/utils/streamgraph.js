@@ -13,7 +13,6 @@ export default function Streamgraph(data, keys, {
     xKey = "year",
     xLabel = "Year",
     yLabel = "Number of games",
-    title = "Some Streamgraph",
     color = d3.scaleOrdinal(d3.schemeTableau10)
 
 }) {
@@ -99,14 +98,6 @@ export default function Streamgraph(data, keys, {
         .append("title")
         .text(d => d.key);
 
-    // Add Title
-    svg.append("g")
-        .attr("transform", `translate(${width / 2},${marginTop / 2})`)
-        .append("text")
-        .attr("text-anchor", "middle")
-        .attr("font-size", "20px")
-        .attr("font-weight", "bold")
-        .text(title);
 
     // Return the chart with the color scale as a property (for the legend).
     return Object.assign(svg.node(), { scales: { color: colorScale } });

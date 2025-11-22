@@ -3,9 +3,9 @@ import makeLegends  from "./utils/make-lengends.js";
 
 export default function pricingGameYear(data) {
     // Dimensions
-    const margin = { top: 100, right: 200, bottom: 80, left: 80 }; // Increased margins
-    const width = 1000 - margin.left - margin.right; // Increased width
-    const height = 600 - margin.top - margin.bottom; // Increased height
+    const margin = { top: 100, right: 150, bottom: 80, left: 40 }; // Increased margins
+    const width = window.innerWidth*0.5-80 - margin.left - margin.right; // Increased width
+    const height = 500 - margin.top - margin.bottom; // Increased height
 
     // Container (div wrapper)
     const container = d3.select("#pricing-game-year");
@@ -102,7 +102,7 @@ export default function pricingGameYear(data) {
     svg.append("defs").append("clipPath")
         .attr("id", "clip")
         .append("rect")
-        .attr("width", width)
+        .attr("width", width+20)
         .attr("height", height);
 
     // 4. Draw Bubbles
@@ -148,7 +148,7 @@ export default function pricingGameYear(data) {
 
     svg.append("text")
         .attr("transform", "rotate(-90)")
-        .attr("y", 0 - margin.left + 20)
+        .attr("y", 0 - margin.left)
         .attr("x", 0 - (height / 2))
         .attr("dy", "1em")
         .style("text-anchor", "middle")

@@ -54,7 +54,7 @@ export default async (data) => {
 
     // Define dimension and SVG container
     const margin = { top: 50, right: 50, bottom: 130, left: 100 }; // Reduced bottom from 200 to 130, left from 150 to 100
-    const width = 1250 - margin.left - margin.right;
+    const width = window.innerWidth*0.5-80 - margin.left - margin.right;
 
     // Adjust height to make cells more square-like, with max height of 520px
     const cellWidth = width / years.length;

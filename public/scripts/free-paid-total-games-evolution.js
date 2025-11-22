@@ -4,9 +4,9 @@ import makeLegends from "./utils/make-lengends.js";
 
 export default function makeNumberGameEvolution(data, selectedMod = "category" ) {
     // Define dimension and SVG container
-    const width = 1000;
+    const width = window.innerWidth*0.5-80;
     const sidePanelWidth = 180;
-    const height = 600;
+    const height = 400;
     const buttonWidth = 80;
     const buttonHeight = 30;
     const svg = d3.select('#free-paid-total-games-evolution').attr("width", width).attr("height", height);
@@ -43,23 +43,29 @@ export default function makeNumberGameEvolution(data, selectedMod = "category" )
     });
 
     const colorMethod = selectedMod === "pricingType" ? getPricingTypeColor : getColor;
-    const title = getLabelByMod(selectedMod);
 
     // Build the graph
     const streamgraph = Streamgraph(dataByYearCategory, categories, {
         width: width-sidePanelWidth,
         height: height,
         xKey: "year",
-        xLabel: "Year",
-        yLabel: "Number of games",
+        xLabel: "Année",
+        yLabel: "Nombre de jeux",
         color: (key) => colorMethod(key),
-        title: `Evolution du nombre de jeu par année, groupé par ${title}`,
     });
 
 
     //add or replace in svg
     svg.html('');
     svg.node().append(streamgraph);
+    // Add Title
+    svg.append("g")
+        .attr("transform", `translate(${width / 2},${20})`)
+        .append("text")
+        .attr("text-anchor", "middle")
+        .attr("font-size", "18px")
+        .attr("font-weight", "bold")
+        .text("Evolution du nombre de jeu par année");
 
     // add side panel with color legend
     svg.selectAll(".side-panel").remove();
