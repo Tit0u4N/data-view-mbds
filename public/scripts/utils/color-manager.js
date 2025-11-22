@@ -9,6 +9,11 @@ const CATEGORY_COLORS = {
     "Strategy": "#ff7f00"
 };
 
+const PRICING_TYPE_COLORS = {
+    "Free": "#377eb8",
+    "Paid": "#4daf4a",
+}
+
 const DEFAULT_COLOR = "#808080";
 
 export const getColor = (category) => {
@@ -17,6 +22,11 @@ export const getColor = (category) => {
     const cleanCat = category.replace(/[\[\]'"]/g, '').trim();
     return CATEGORY_COLORS[cleanCat] || DEFAULT_COLOR;
 };
+
+export const getPricingTypeColor = (pricingType) => {
+    if (!pricingType) return DEFAULT_COLOR;
+    return PRICING_TYPE_COLORS[pricingType] || DEFAULT_COLOR;
+}
 
 export const getAllColors = () => {
     return CATEGORY_COLORS;

@@ -2,7 +2,7 @@ import dateSlider from "./utils/date-slider.js";
 import { filterData } from "./utils/data-manager.js";
 import { initCategoryMultiselect } from "./utils/category-multiselect.js";
 import ratingByGamePricing from "./rating-by-game-pricing.js";
-import freePaidTotalGamesEvolution from "./free-paid-total-games-evolution.js";
+import makeNumberGameEvolution from "./free-paid-total-games-evolution.js";
 import pricingGameYear from "./pricing-game-year.js";
 
 // Load data and run the visualizationr
@@ -10,7 +10,7 @@ const data = await d3.csv('./data.csv');
 
 // Initial render
 ratingByGamePricing(data);
-freePaidTotalGamesEvolution(data);
+makeNumberGameEvolution(data);
 pricingGameYear(data);
 
 // State
@@ -29,7 +29,7 @@ const updateVisualization = () => {
     const finalData = filterData(lastDateFilteredData, filters);
 
     ratingByGamePricing(finalData);
-    freePaidTotalGamesEvolution(finalData);
+    makeNumberGameEvolution(finalData);
     pricingGameYear(finalData);
 };
 

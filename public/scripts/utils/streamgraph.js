@@ -6,13 +6,14 @@
 export default function Streamgraph(data, keys, {
     width = 928,
     height = 500,
-    marginTop = 10,
+    marginTop = 40,
     marginRight = 10,
-    marginBottom = 30,
-    marginLeft = 40,
+    marginBottom = 60,
+    marginLeft = 60,
     xKey = "year",
     xLabel = "Year",
     yLabel = "Number of games",
+    title = "Some Streamgraph",
     color = d3.scaleOrdinal(d3.schemeTableau10)
 
 }) {
@@ -58,23 +59,35 @@ export default function Streamgraph(data, keys, {
         .call(g => g.selectAll(".tick line").clone()
             .attr("x2", width - marginLeft - marginRight)
             .attr("stroke-opacity", 0.1))
-        .call(g => g.append("text")
-            .attr("x", -marginLeft)
-            .attr("y", 10)
-            .attr("fill", "currentColor")
-            .attr("text-anchor", "start")
-            .text(xLabel));
 
-    // Append the x-axis and remove the domain line.
+    // Append the x-axis
     svg.append("g")
         .attr("transform", `translate(0,${height - marginBottom})`)
-        .call(d3.axisBottom(x).tickSizeOuter(0))
-        .call(g => g.append("text")
-            .attr("x", width - marginRight)
-            .attr("y", -4)
-            .attr("fill", "currentColor")
-            .attr("text-anchor", "end")
-            .text(yLabel));
+        // show all years
+        .call(d3.axisBottom(x).ticks(d3.timeYear.every(1)).tickFormat(d3.timeFormat("%Y")))
+        .selectAll("text")
+        .style("text-anchor", "end")
+        .attr("dx", "-.8em")
+        .attr("dy", ".15em")
+        .attr("transform", "rotate(-65)");
+
+    svg.append("text")
+        .attr("text-anchor", "middle")
+        .attr("x", width / 2)
+        .attr("y", height)
+        .text(xLabel)
+        .style("font-size", "14px")
+        .style("font-weight", "600");
+
+    svg.append("text")
+        .attr("text-anchor", "middle")
+        .attr("transform", "rotate(-90)")
+        .attr("y", 10)
+        .attr("x", -height / 2)
+        .text(yLabel)
+        .style("font-size", "14px")
+        .style("font-weight", "600");
+
 
     // Append a path for each series.
     svg.append("g")
@@ -85,6 +98,15 @@ export default function Streamgraph(data, keys, {
         .attr("d", area)
         .append("title")
         .text(d => d.key);
+
+    // Add Title
+    svg.append("g")
+        .attr("transform", `translate(${width / 2},${marginTop / 2})`)
+        .append("text")
+        .attr("text-anchor", "middle")
+        .attr("font-size", "20px")
+        .attr("font-weight", "bold")
+        .text(title);
 
     // Return the chart with the color scale as a property (for the legend).
     return Object.assign(svg.node(), { scales: { color: colorScale } });
