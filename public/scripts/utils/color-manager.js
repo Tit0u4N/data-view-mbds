@@ -1,17 +1,12 @@
 const CATEGORY_COLORS = {
-    "Action": "#e6194b",
-    "Adventure": "#3cb44b",
-    "Casual": "#ffe119",
-    "Indie": "#4363d8",
-    "Massively Multiplayer": "#f58231",
-    "RPG": "#911eb4",
-    "Racing": "#46f0f0",
-    "Simulation": "#f032e6",
-    "Sports": "#bcf60c",
-    "Strategy": "#fabebe",
-    "Free to Play": "#008080",
-    "Early Access": "#e6beff",
-    "Other": "#9a6324"
+    "Action": "#a6cee3",
+    "Adventure": "#1f78b4",
+    "Role-playing": "#b2df8a",
+    "Racing": "#33a02c",
+    "Shooter": "#fb9a99",
+    "Simulation": "#e31a1c",
+    "Sports": "#fdbf6f",
+    "Strategy": "#ff7f00"
 };
 
 const DEFAULT_COLOR = "#808080";
