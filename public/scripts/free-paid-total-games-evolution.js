@@ -3,7 +3,7 @@ import { getColor, getPricingTypeColor } from './utils/color-manager.js';
 import makeLegends from "./utils/make-lengends.js";
 import { addFullscreenButton, CONTAINER_WIDTH } from './utils/fullscreen-manager.js';
 
-export default function makeNumberGameEvolution(data, selectedMod = "category") {
+export default function makeNumberGameEvolution(data) {
     const containerId = 'free-paid-total-games-evolution';
 
     // Render function that accepts width and height
@@ -12,10 +12,7 @@ export default function makeNumberGameEvolution(data, selectedMod = "category") 
         const width = containerWidth;
         const sidePanelWidth = 180;
         const height = containerHeight;
-        const buttonWidth = 80;
-        const buttonHeight = 30;
         const svg = d3.select(`#${containerId}`).attr("width", width).attr("height", height);
-        const mods = ["category", "pricingType"];
 
         // parse date
         const parseDate = d3.timeParse("%d/%m/%Y %H:%M");
@@ -31,12 +28,7 @@ export default function makeNumberGameEvolution(data, selectedMod = "category") 
 
         // prepare data
         let grouped, categories;
-        if (selectedMod === "pricingType") {
-            ({ grouped, categories } = makeDataByYearAndPricingType(data));
-        } else {
-            ({ grouped, categories } = makeDataByYearAndCategory(data));
-        }
-
+        ({ grouped, categories } = makeDataByYearAndCategory(data))
 
         // Transform grouped data into an array suitable for stacking
         const dataByYearCategory = Object.keys(grouped).map(year => {
@@ -47,11 +39,11 @@ export default function makeNumberGameEvolution(data, selectedMod = "category") 
             return row;
         });
 
-        const colorMethod = selectedMod === "pricingType" ? getPricingTypeColor : getColor;
+        const colorMethod = getColor;
 
         // Build the graph
         const streamgraph = Streamgraph(dataByYearCategory, categories, {
-            width: width - sidePanelWidth,
+            width: width,
             height: height,
             xKey: "year",
             xLabel: "Année",
@@ -71,60 +63,6 @@ export default function makeNumberGameEvolution(data, selectedMod = "category") 
             .attr("font-size", "18px")
             .attr("font-weight", "bold")
             .text("Evolution du nombre de jeu par année");
-
-        // add side panel with color legend
-        svg.selectAll(".side-panel").remove();
-        const sidePanel = svg.append("g")
-            .attr("class", "side-panel")
-            .attr("transform", `translate(${width - sidePanelWidth + 20}, 50)`);
-
-
-        makeLegends(sidePanel, categories, 0, colorMethod, 0, buttonHeight + 20);
-
-        // add selector for mods
-        const buttonGroup = sidePanel.append("g")
-            .attr("class", "mod-button-group")
-            .attr("transform", "translate(0, 0)");
-
-        const buttons = buttonGroup.selectAll(".mod-button")
-            .data(mods)
-            .enter()
-            .append("g")
-            .attr("class", "mod-button")
-            .attr("transform", (d, i) => `translate(${i * buttonWidth}, 0)`)
-            .style("cursor", "pointer")
-            .on("click", function (event, d) {
-                selectedMod = mods[d]
-                makeNumberGameEvolution(data, selectedMod);
-            });
-
-
-        buttons.append("rect")
-            .attr("width", buttonWidth)
-            .attr("height", buttonHeight)
-            .attr("rx", 4) // arrondi
-            .attr("ry", 4);
-
-
-        buttons.append("text")
-            .attr("x", buttonWidth / 2)
-            .attr("y", buttonHeight / 2 + 5)
-            .attr("text-anchor", "middle")
-            .attr("font-size", 14)
-            .text(d => getLabelByMod(d));
-
-        buttonGroup.selectAll(".mod-button").each(function (d) {
-            const isSelected = d === selectedMod;
-
-            d3.select(this).select("rect")
-                .attr("fill", isSelected ? "#4a90e2" : "#e0e0e0")   // couleur sélection / normal
-                .attr("stroke", isSelected ? "#2a70c2" : "#999")
-                .attr("stroke-width", isSelected ? 2 : 1);
-
-            d3.select(this).select("text")
-                .attr("font-weight", isSelected ? "bold" : "normal")
-                .attr("fill", isSelected ? "white" : "black");
-        });
     };
 
     // Initial render
@@ -132,13 +70,6 @@ export default function makeNumberGameEvolution(data, selectedMod = "category") 
 
     // Add fullscreen button - with a slight delay to ensure DOM is ready
     setTimeout(() => addFullscreenButton(containerId, (w, h) => render(w, h)), 100);
-}
-
-function getLabelByMod(mod) {
-    if (mod === "pricingType") {
-        return "Prix";
-    }
-    return "Catégorie";
 }
 
 
