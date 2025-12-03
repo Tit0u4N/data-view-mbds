@@ -12,6 +12,8 @@ body {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+    width: 100vw;
+    overflow-x: hidden;
 }
 
 /* Header & Filters */
@@ -21,7 +23,7 @@ header {
     padding: 1rem 0;
     position: sticky;
     top: 0;
-    z-index: 10;
+    z-index: 100000;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
@@ -120,54 +122,61 @@ header {
     cursor: pointer;
 }
 
-/* Multiselect Styles */
-.multiselect {
-    width: 200px;
-    position: relative;
+/* Category Badges Styles */
+#category-badges-container {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 8px;
+    align-items: center;
+    overflow-x: auto;
+    padding: 4px 0;
 }
 
-.selectBox {
-    position: relative;
-}
-
-.selectBox select {
-    width: 100%;
-}
-
-.overSelect {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    cursor: pointer;
-}
-
-#checkboxes {
-    display: none;
-    border: 1px solid #ccc;
-    position: absolute;
+.category-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 16px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #222;
     background-color: white;
-    z-index: 100;
-    width: 100%;
-    max-height: 300px;
-    overflow-y: auto;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-#checkboxes label {
-    display: block;
-    padding: 5px 10px;
     cursor: pointer;
-    font-weight: normal;
+    transition: all 0.2s ease;
+    border: 2px solid #ddd;
+    user-select: none;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
-#checkboxes label:hover {
+.category-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.category-badge:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    border-color: #999;
+}
+
+.category-badge.active {
+    opacity: 1;
+    background-color: white;
+}
+
+.category-badge:not(.active) {
+    opacity: 1;
     background-color: #f0f0f0;
+    filter: grayscale(100%);
+    border-color: #e0e0e0;
 }
 
-#checkboxes input {
-    margin-right: 10px;
+.category-badge:not(.active):hover {
+    background-color: #e8e8e8;
 }
 
 /* Responsive pour les petits écrans */
@@ -198,8 +207,8 @@ main {
     box-sizing: border-box;
 }
 
-.graphs-row{
-    width: 100%;
+.graphs-row {
+    width: 100vw;
     max-width: calc(100vw - 60px);
     display: flex;
     flex-direction: row;
@@ -325,56 +334,6 @@ footer {
     cursor: pointer;
 }
 
-/* Multiselect Styles */
-.multiselect {
-    width: 200px;
-    position: relative;
-}
-
-.selectBox {
-    position: relative;
-}
-
-.selectBox select {
-    width: 100%;
-}
-
-.overSelect {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    cursor: pointer;
-}
-
-#checkboxes {
-    display: none;
-    border: 1px solid #ccc;
-    position: absolute;
-    background-color: white;
-    z-index: 100;
-    width: 100%;
-    max-height: 300px;
-    overflow-y: auto;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-#checkboxes label {
-    display: block;
-    padding: 5px 10px;
-    cursor: pointer;
-    font-weight: normal;
-}
-
-#checkboxes label:hover {
-    background-color: #f0f0f0;
-}
-
-#checkboxes input {
-    margin-right: 10px;
-}
-
 /* Responsive pour les petits écrans */
 @media (max-width: 1000px) {
     #filters-container {
@@ -447,24 +406,75 @@ footer {
     border-top: 1px solid #eee;
 }
 
-/* Color Indicator in Multiselect */
-.color-indicator {
-    display: inline-block;
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    margin-right: 8px;
-    margin-left: 4px;
-    vertical-align: middle;
-    border: 1px solid rgba(0, 0, 0, 0.1);
+/* Fullscreen Functionality */
+.fullscreen-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.2s ease-in-out;
 }
 
-#checkboxes label {
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.fullscreen-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 18px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.fullscreen-btn:hover {
+    background: white;
+    border-color: #222;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transform: scale(1.05);
+}
+
+.close-fullscreen-btn {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.95);
+    border: 2px solid #222;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    font-size: 24px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    z-index: 10001;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     display: flex;
     align-items: center;
-    padding: 5px;
+    justify-content: center;
+    line-height: 1;
+    padding: 0;
 }
 
-#checkboxes input {
-    margin-right: 5px;
+.close-fullscreen-btn:hover {
+    background: #222;
+    color: white;
+    transform: rotate(90deg) scale(1.1);
+}
+
+.graphs-container {
+    position: relative;
+    /* For positioning fullscreen button */
 }

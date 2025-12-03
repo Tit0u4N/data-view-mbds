@@ -1,132 +1,75 @@
 import Streamgraph from './utils/streamgraph.js';
-import {getColor, getPricingTypeColor} from './utils/color-manager.js';
+import { getColor, getPricingTypeColor } from './utils/color-manager.js';
 import makeLegends from "./utils/make-lengends.js";
+import { addFullscreenButton, CONTAINER_WIDTH } from './utils/fullscreen-manager.js';
 
-export default function makeNumberGameEvolution(data, selectedMod = "category" ) {
-    // Define dimension and SVG container
-    const width = window.innerWidth*0.5-80;
-    const sidePanelWidth = 180;
-    const height = 400;
-    const buttonWidth = 80;
-    const buttonHeight = 30;
-    const svg = d3.select('#free-paid-total-games-evolution').attr("width", width).attr("height", height);
-    const mods = ["category", "pricingType"];
+export default function makeNumberGameEvolution(data) {
+    const containerId = 'free-paid-total-games-evolution';
 
-    // parse date
-    const parseDate = d3.timeParse("%d/%m/%Y %H:%M");
-    data = data.map(d => {
-        const date = parseDate(d.dateGlobal);
-        return {
-            ...d,
-            date,
-            year: date.getFullYear()
-        };
-    });
+    // Render function that accepts width and height
+    const render = (containerWidth = CONTAINER_WIDTH, containerHeight = 400) => {
+        // Define dimension and SVG container
+        const width = containerWidth;
+        const sidePanelWidth = 180;
+        const height = containerHeight;
+        const svg = d3.select(`#${containerId}`).attr("width", width).attr("height", height);
 
-
-    // prepare data
-    let grouped, categories;
-    if (selectedMod === "pricingType") {
-        ({grouped, categories} = makeDataByYearAndPricingType(data));
-    } else {
-        ({grouped, categories} = makeDataByYearAndCategory(data));
-    }
-
-
-    // Transform grouped data into an array suitable for stacking
-    const dataByYearCategory = Object.keys(grouped).map(year => {
-        const row = { year: new Date(+year, 0, 1) };
-        categories.forEach(cat => {
-            row[cat] = grouped[year][cat] || 0;
-        });
-        return row;
-    });
-
-    const colorMethod = selectedMod === "pricingType" ? getPricingTypeColor : getColor;
-
-    // Build the graph
-    const streamgraph = Streamgraph(dataByYearCategory, categories, {
-        width: width-sidePanelWidth,
-        height: height,
-        xKey: "year",
-        xLabel: "Année",
-        yLabel: "Nombre de jeux",
-        color: (key) => colorMethod(key),
-    });
-
-
-    //add or replace in svg
-    svg.html('');
-    svg.node().append(streamgraph);
-    // Add Title
-    svg.append("g")
-        .attr("transform", `translate(${width / 2},${20})`)
-        .append("text")
-        .attr("text-anchor", "middle")
-        .attr("font-size", "18px")
-        .attr("font-weight", "bold")
-        .text("Evolution du nombre de jeu par année");
-
-    // add side panel with color legend
-    svg.selectAll(".side-panel").remove();
-    const sidePanel = svg.append("g")
-        .attr("class", "side-panel")
-        .attr("transform", `translate(${width - sidePanelWidth + 20}, 50)`);
-
-
-    makeLegends(sidePanel, categories, 0, colorMethod, 0, buttonHeight + 20);
-
-    // add selector for mods
-    const buttonGroup = sidePanel.append("g")
-        .attr("class", "mod-button-group")
-        .attr("transform", "translate(0, 0)");
-
-    const buttons = buttonGroup.selectAll(".mod-button")
-        .data(mods)
-        .enter()
-        .append("g")
-        .attr("class", "mod-button")
-        .attr("transform", (d, i) => `translate(${i * buttonWidth}, 0)`)
-        .style("cursor", "pointer")
-        .on("click", function(event, d) {
-            selectedMod = mods[d]
-            makeNumberGameEvolution(data, selectedMod);
+        // parse date
+        const parseDate = d3.timeParse("%d/%m/%Y %H:%M");
+        data = data.map(d => {
+            const date = parseDate(d.dateGlobal);
+            return {
+                ...d,
+                date,
+                year: date.getFullYear()
+            };
         });
 
 
-    buttons.append("rect")
-        .attr("width", buttonWidth)
-        .attr("height", buttonHeight)
-        .attr("rx", 4) // arrondi
-        .attr("ry", 4);
+        // prepare data
+        let grouped, categories;
+        ({ grouped, categories } = makeDataByYearAndCategory(data))
+
+        // Transform grouped data into an array suitable for stacking
+        const dataByYearCategory = Object.keys(grouped).map(year => {
+            const row = { year: new Date(+year, 0, 1) };
+            categories.forEach(cat => {
+                row[cat] = grouped[year][cat] || 0;
+            });
+            return row;
+        });
+
+        const colorMethod = getColor;
+
+        // Build the graph
+        const streamgraph = Streamgraph(dataByYearCategory, categories, {
+            width: width,
+            height: height,
+            xKey: "year",
+            xLabel: "Année",
+            yLabel: "Nombre de jeux",
+            color: (key) => colorMethod(key),
+        });
 
 
-    buttons.append("text")
-        .attr("x", buttonWidth / 2)
-        .attr("y", buttonHeight / 2 + 5)
-        .attr("text-anchor", "middle")
-        .attr("font-size", 14)
-        .text(d => getLabelByMod(d));
+        //add or replace in svg
+        svg.html('');
+        svg.node().append(streamgraph);
+        // Add Title
+        svg.append("g")
+            .attr("transform", `translate(${width / 2},${20})`)
+            .append("text")
+            .attr("text-anchor", "middle")
+            .attr("font-size", "18px")
+            .attr("font-weight", "bold")
+            .text("Evolution du nombre de jeu par année");
+    };
 
-    buttonGroup.selectAll(".mod-button").each(function(d) {
-        const isSelected = d === selectedMod;
+    // Initial render
+    render();
 
-        d3.select(this).select("rect")
-            .attr("fill", isSelected ? "#4a90e2" : "#e0e0e0")   // couleur sélection / normal
-            .attr("stroke", isSelected ? "#2a70c2" : "#999")
-            .attr("stroke-width", isSelected ? 2 : 1);
-
-        d3.select(this).select("text")
-            .attr("font-weight", isSelected ? "bold" : "normal")
-            .attr("fill", isSelected ? "white" : "black");
-    });
-}
-
-function getLabelByMod(mod) {
-    if (mod === "pricingType") {
-        return "Prix";
-    }
-    return "Catégorie";
+    // Add fullscreen button - with a slight delay to ensure DOM is ready
+    setTimeout(() => addFullscreenButton(containerId, (w, h) => render(w, h)), 100);
 }
 
 
@@ -146,7 +89,7 @@ function makeDataByYearAndPricingType(data) {
             !grouped[d.year]["Paid"] ? grouped[d.year]["Paid"] = 1 : grouped[d.year]["Paid"] += 1;
     });
 
-    return {grouped, categories};
+    return { grouped, categories };
 }
 
 function makeDataByYearAndCategory(data) {
@@ -174,5 +117,5 @@ function makeDataByYearAndCategory(data) {
         grouped[d.year][d.category]++;
     });
 
-    return {grouped, categories};
+    return { grouped, categories };
 }
