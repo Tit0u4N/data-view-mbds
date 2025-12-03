@@ -99,6 +99,90 @@ export default function Streamgraph(data, keys, {
         .text(d => d.key);
 
 
+    // Append a vertical line (initially hidden)
+    const hoverLine = svg.append("line")
+        .attr("class", "hover-line")
+        .attr("stroke", "#939393")
+        .attr("stroke-width", 1)
+        .attr("stroke-dasharray", "4 4")
+        .style("display", "none");
+
+    // Create a tooltip div if it doesn't exist
+    // Tooltip
+    let tooltip = d3.select("body").selectAll(".tooltip-number-evo").data([0]);
+    tooltip = tooltip.enter().append("div")
+        .attr("class", "tooltip-number-evo")
+        .style("position", "absolute")
+        .style('pointer-events', 'none')
+        .style('padding', '10px 12px')
+        .style('background', 'rgba(0,0,0,0.9)')
+        .style('color', '#fff')
+        .style('font-size', '14px')
+        .style('font-family', 'sans-serif')
+        .style('border-radius', '6px')
+        .style('box-shadow', '0 2px 8px rgba(0,0,0,0.3)')
+        .style('max-width', '300px')
+        .style("opacity", 0)
+        .merge(tooltip);
+
+    // Add a transparent overlay to capture mouse events
+    svg.append("rect")
+        .attr("class", "overlay")
+        .attr("width", width)
+        .attr("height", height)
+        .style("fill", "none")
+        .style("pointer-events", "all")
+        .on("mousemove", function () {
+            const [mx] = d3.mouse(this);
+            const cursorDate = x.invert(mx);
+            const cursorYear = d3.timeYear.round(cursorDate);
+            const nearest = closestDate(cursorYear, data, xKey);
+            const xPos = x(nearest.date);
+
+            hoverLine
+                .style("display", null)
+                .attr("x1", xPos)
+                .attr("x2", xPos)
+
+                .attr("y1", marginTop)
+                .attr("y2", height - marginBottom);
+
+            let tooltipContent = `<strong>Year:</strong> ${d3.timeFormat("%Y")(nearest.date)}<br/>`;
+            keys.forEach(key => {
+                const value = nearest.data[key] || 0;
+                if(value!==0)
+                    tooltipContent += `<span style="color:${colorScale(key)};">&#9679;</span> <strong>${key}:</strong> ${value.toLocaleString("en-US")}<br/>`;
+            });
+
+            tooltip
+                .html(tooltipContent)
+                .style("left", (d3.event.pageX + 15) + "px")
+                .style("top", (d3.event.pageY - 15) + "px")
+                .transition().duration(200).style("opacity", 1);
+        })
+        .on("mouseleave", function () {
+            hoverLine.style("display", "none");
+            tooltip.transition().duration(200).style("opacity", 0);
+        });
+
     // Return the chart with the color scale as a property (for the legend).
     return Object.assign(svg.node(), { scales: { color: colorScale } });
+}
+
+
+function closestDate(targetDate, data, xKey) {
+    let closest = null;
+    let minDiff = Infinity;
+
+    data.forEach(d => {
+        const currentDate = d[xKey];
+        const diff = Math.abs(currentDate - targetDate);
+
+        if (diff < minDiff) {
+            minDiff = diff;
+            closest = d;
+        }
+    });
+
+    return { date: closest[xKey], data: closest };
 }
