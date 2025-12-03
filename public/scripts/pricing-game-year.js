@@ -1,6 +1,6 @@
 import { getColor } from "./utils/color-manager.js";
 import makeLegends from "./utils/make-lengends.js";
-import { addFullscreenButton } from './utils/fullscreen-manager.js';
+import {addFullscreenButton, CONTAINER_WIDTH} from './utils/fullscreen-manager.js';
 
 export default function pricingGameYear(data) {
     const containerId = 'pricing-game-year';
