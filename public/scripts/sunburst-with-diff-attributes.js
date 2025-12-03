@@ -1,4 +1,25 @@
+import { getColor } from "./utils/color-manager.js";
 import { addFullscreenButton, CONTAINER_WIDTH } from './utils/fullscreen-manager.js';
+
+// Store the currently selected year across re-renders
+let currentSelectedYear = null;
+
+// Attribute configuration
+const ATTRIBUTES = [
+    { id: 'category', label: 'Catégorie' },
+    { id: 'isFree', label: 'Gratuit/Payant' },
+    { id: 'os', label: 'Système d\'exploitation' },
+    { id: 'type', label: 'Type de jeu' }
+];
+
+const ATTRIBUTE_LABELS = {
+    'category': 'Catégorie',
+    'isFree': 'Gratuit/Payant',
+    'os': 'Système d\'exploitation',
+    'type': 'Type de jeu'
+};
+
+const TOOLTIP_LABELS = ['Catégorie', 'Type (Gratuit/Payant)', 'OS', 'Type de jeu'];
 
 export default async (data) => {
     const containerId = 'sunburst-for-several-attributes';
@@ -47,12 +68,21 @@ export default async (data) => {
         const processedData = data.map(d => {
             const date = new Date(d.dateGlobal);
             const year = isNaN(date) ? null : date.getFullYear();
-            const category = d.category;
-            const isFree = (d.isFree === 'TRUE' || d.isFree === 'True' || d.isFree === true) ? 'Gratuit' : 'Payant';
-            const type = d.type;
-            const os = d.supportedOperatingSystems;
-            return { year, category, isFree, type, os };
-        }).filter(d => d.year !== null && d.isFree !== null && d.type && d.category);
+            
+            // Convert type number to label
+            let type = d.type;
+            if (type == 1) type = 'Jeu';
+            else if (type == 2) type = 'Bundles';
+            else if (type == 3) type = 'DLC';
+            
+            return { 
+                year, 
+                category: d.category,
+                isFree: (d.isFree === 'TRUE' || d.isFree === 'True' || d.isFree === true) ? 'Gratuit' : 'Payant',
+                type,
+                os: d.supportedOperatingSystems
+            };
+        }).filter(d => d.year && d.isFree && d.type && d.category);
 
         // Get all available years
         const years = [...new Set(processedData.map(d => d.year))].sort((a, b) => a - b);
@@ -98,14 +128,11 @@ export default async (data) => {
             .attr('value', d => d)
             .text(d => d);
 
-        // Create attribute checkboxes
-        const allAttributes = [
-            { id: 'os', label: 'OS', required: false },
-            { id: 'isFree', label: 'Gratuit/Payant', required: false },
-            { id: 'category', label: 'Catégorie', required: false },
-            { id: 'type', label: 'Type de jeu', required: false }
-        ];
+        // Restore previously selected year if it exists and is still available
+        currentSelectedYear = (currentSelectedYear && years.includes(currentSelectedYear)) ? currentSelectedYear : years[0];
+        yearSelect.property('value', currentSelectedYear);
 
+        // Create attribute checkboxes
         const checkboxContainer = selectorContainer.append('div')
             .style('display', 'inline-block')
             .style('margin-left', '20px')
@@ -121,12 +148,12 @@ export default async (data) => {
         const checkboxes = checkboxContainer.append('div')
             .style('display', 'inline-block');
 
-        allAttributes.forEach(attr => {
-            const checkboxWrapper = checkboxes.append('label')
-                .style('margin-right', '15px')
-                .style('font-family', 'sans-serif')
-                .style('font-size', '13px')
-                .style('cursor', 'pointer');
+    ATTRIBUTES.forEach(attr => {
+        const checkboxWrapper = checkboxes.append('label')
+            .style('margin-right', '15px')
+            .style('font-family', 'sans-serif')
+            .style('font-size', '13px')
+            .style('cursor', 'pointer');
 
             checkboxWrapper.append('input')
                 .attr('type', 'checkbox')
@@ -140,44 +167,31 @@ export default async (data) => {
                     updateSunburst();
                 });
 
-            checkboxWrapper.append('span')
-                .text(attr.label);
+            checkboxWrapper.append('span').text(attr.label);
         });
 
         // Function to update checkbox states (disable if only one is checked)
         function updateCheckboxStates() {
-            const checkedCount = allAttributes.filter(attr => {
-                const checkbox = document.getElementById(`checkbox-${attr.id}`);
-                return checkbox && checkbox.checked;
-            }).length;
+            const checkedCount = ATTRIBUTES.filter(attr => 
+                document.getElementById(`checkbox-${attr.id}`)?.checked
+            ).length;
 
-            allAttributes.forEach(attr => {
+            ATTRIBUTES.forEach(attr => {
                 const checkbox = document.getElementById(`checkbox-${attr.id}`);
                 if (checkbox) {
-                    // Disable if this is the last checked checkbox
-                    if (checkedCount === 1 && checkbox.checked) {
-                        checkbox.disabled = true;
-                        checkbox.parentElement.style.cursor = 'not-allowed';
-                        checkbox.style.cursor = 'not-allowed';
-                    } else {
-                        checkbox.disabled = false;
-                        checkbox.parentElement.style.cursor = 'pointer';
-                        checkbox.style.cursor = 'pointer';
-                    }
+                    const isLastChecked = checkedCount === 1 && checkbox.checked;
+                    checkbox.disabled = isLastChecked;
+                    checkbox.parentElement.style.cursor = isLastChecked ? 'not-allowed' : 'pointer';
+                    checkbox.style.cursor = isLastChecked ? 'not-allowed' : 'pointer';
                 }
             });
         }
 
         // Function to get selected attributes from checkboxes
         function getSelectedAttributes() {
-            const selected = [];
-            allAttributes.forEach(attr => {
-                const checkbox = document.getElementById(`checkbox-${attr.id}`);
-                if (checkbox && checkbox.checked) {
-                    selected.push(attr.id);
-                }
-            });
-            // Ensure at least one attribute is selected
+            const selected = ATTRIBUTES
+                .filter(attr => document.getElementById(`checkbox-${attr.id}`)?.checked)
+                .map(attr => attr.id);
             return selected.length > 0 ? selected : ['os'];
         }
 
@@ -188,25 +202,24 @@ export default async (data) => {
 
             console.log(`Sunburst showing data for year: ${selectedYear}`);
 
-            // Group categories: keep top 9, rest becomes "Autres"
-            const categoryCounts = {};
-            yearFilteredData.forEach(d => {
-                categoryCounts[d.category] = (categoryCounts[d.category] || 0) + 1;
-            });
+        // Note: Categories are already filtered in processedData (filtered by index.js)
+        // Group categories: keep top 9 among the filtered categories, rest becomes "Autres"
+        const categoryCounts = {};
+        yearFilteredData.forEach(d => categoryCounts[d.category] = (categoryCounts[d.category] || 0) + 1);
+        
+        const top9Categories = Object.entries(categoryCounts)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 9)
+            .map(([cat]) => cat);
+        
+        // Replace categories not in top 9 with "Autres"
+        const processedYearData = yearFilteredData.map(d => ({
+            ...d,
+            category: top9Categories.includes(d.category) ? d.category : 'Autres'
+        }));
 
-            const sortedCategories = Object.entries(categoryCounts)
-                .sort((a, b) => b[1] - a[1])
-                .map(([cat, count]) => cat);
-
-            const top9Categories = sortedCategories.slice(0, 9);
-
-            // Replace categories not in top 9 with "Autres"
-            const processedYearData = yearFilteredData.map(d => ({
-                ...d,
-                category: top9Categories.includes(d.category) ? d.category : 'Autres'
-            }));
-
-            console.log(`Top 9 catégories + Autres:`, [...top9Categories, 'Autres']);
+        console.log(`Top 9 catégories + Autres (filtré):`, [...top9Categories, 'Autres']);
+        console.log(`Nombre total de jeux après filtrage:`, processedYearData.length);
 
             // Attributes are now determined by checkbox selection
             // (already set in function parameter)
@@ -235,83 +248,136 @@ export default async (data) => {
             }
 
             const hierarchyData = buildHierarchy(processedYearData, attributes);
+            const categoryDepth = attributes.indexOf('category') + 1;
 
             // Set up drawing area
             const radius = Math.min(width, height) / 2;
             svg.selectAll('*').remove();
-            const g = svg.append('g')
+            
+            // Define clipping zone for sunburst to keep it contained
+            const sunburstClipId = 'sunburst-clip-' + Math.random().toString(36).substr(2, 9);
+            svg.append('defs').append('clipPath')
+                .attr('id', sunburstClipId)
+                .append('rect')
+                .attr('x', margin.left)
+                .attr('y', margin.top)
+                .attr('width', width)
+                .attr('height', height);
+            
+            // Create a container group for sunburst with clipping
+            const sunburstContainer = svg.append('g')
+                .attr('clip-path', `url(#${sunburstClipId})`);
+            
+            const g = sunburstContainer.append('g')
                 .attr('transform', `translate(${margin.left + width / 2}, ${margin.top + height / 2})`);
 
             const root = d3.hierarchy(hierarchyData).sum(d => d.value || 0).sort((a, b) => b.value - a.value);
 
             d3.partition().size([2 * Math.PI, radius])(root);
 
-            const color = d3.scaleOrdinal(d3.schemeCategory10);
+            // Create x and y scales for zoom
+            const x = d3.scaleLinear()
+                .range([0, 2 * Math.PI])
+                .domain([0, 2 * Math.PI]);
+
+            const y = d3.scaleLinear()
+                .range([0, radius])
+                .domain([0, radius]);
 
             const arc = d3.arc()
-                .startAngle(d => d.x0)
-                .endAngle(d => d.x1)
-                .innerRadius(d => d.y0)
-                .outerRadius(d => d.y1);
+                .startAngle(d => Math.max(0, Math.min(2 * Math.PI, x(d.x0))))
+                .endAngle(d => Math.max(0, Math.min(2 * Math.PI, x(d.x1))))
+                .innerRadius(d => Math.max(0, y(d.y0)))
+                .outerRadius(d => Math.max(0, y(d.y1)));
+
+            // Helper function to get category color for a node
+            const getNodeColor = (d) => {
+                if (categoryDepth <= 0) return '#ccc';
+                
+                let categoryNode = d;
+                while (categoryNode && categoryNode.depth > categoryDepth) {
+                    categoryNode = categoryNode.parent;
+                }
+                if (categoryNode && categoryNode.depth === categoryDepth) {
+                    return getColor(categoryNode.data.name);
+                }
+                const topAncestor = d.ancestors().reverse()[Math.min(categoryDepth, d.ancestors().length - 1)];
+                return topAncestor ? getColor(topAncestor.data.name) : '#ccc';
+            };
 
             g.selectAll('path')
                 .data(root.descendants().filter(d => d.depth > 0))
                 .enter().append('path')
                 .attr('class', 'sunburst-arc')
                 .attr('d', arc)
-                .attr('fill', d => {
-                    // Color by category (3rd ring)
-                    let categoryNode = d;
-                    while (categoryNode && categoryNode.depth > 3) {
-                        categoryNode = categoryNode.parent;
-                    }
-                    if (categoryNode && categoryNode.depth === 3) {
-                        return color(categoryNode.data.name);
-                    }
-                    // If no category level (depth < 3), use parent coloring
-                    const topAncestor = d.ancestors().reverse()[Math.min(3, d.ancestors().length - 1)];
-                    return topAncestor ? color(topAncestor.data.name) : '#ccc';
-                })
+                .attr('fill', getNodeColor)
                 .attr('stroke', '#fff')
                 .attr('stroke-width', 1.5)
-                .style('cursor', 'pointer')
-                .on('mouseover', function () {
-                    // Dans D3 v5, les données sont attachées à 'this', pas passées en paramètre
-                    const d = d3.select(this).datum();
-                    const event = d3.event; // En D3 v5, l'événement est accessible via d3.event
-
-                    // Vérification complète
-                    if (!d || !d.data || !d.data.name) {
-                        return;
-                    }
-
-                    d3.select(this).attr('opacity', 0.8);
-
-                    const dataName = d.data.name;
-                    const count = d.value || 0;
-
-                    // Déterminer le label selon la profondeur (quel anneau)
-                    const labels = ['OS', 'Type (Gratuit/Payant)', 'Catégorie', 'Type de jeu'];
-                    const label = labels[d.depth - 1] || 'Attribut';
-
-                    tooltip.html(`<strong>${label}:</strong> ${dataName}<br/><br/><strong>Nombre de jeux:</strong> ${count}`)
-                        .style('display', 'block')
-                        .style('left', (event.clientX + 15) + 'px')
-                        .style('top', (event.clientY + 15) + 'px');
-                })
-                .on('mousemove', function () {
-                    const event = d3.event;
-                    tooltip.style('left', (event.clientX + 15) + 'px')
-                        .style('top', (event.clientY + 15) + 'px');
-                })
-                .on('mouseout', function () {
-                    d3.select(this).attr('opacity', 1);
+                .style('cursor', d => (categoryDepth > 0 && d.depth === categoryDepth) ? 'pointer' : 'default')
+                .on('click', function() {
+                const clickedNode = d3.select(this).datum();
+                if (categoryDepth > 0 && clickedNode.depth === categoryDepth) {
+                    focusOn(clickedNode);
+                }
+            })
+            .on('mouseover', function() {
+                const d = d3.select(this).datum();
+                const event = d3.event;
+                
+                if (!d?.data?.name) return;
+                
+                d3.select(this).attr('opacity', 0.8);
+                
+                const label = TOOLTIP_LABELS[d.depth - 1] || 'Attribut';
+                
+                tooltip.html(`<strong>${label}:</strong> ${d.data.name}<br/><br/><strong>Nombre de jeux:</strong> ${d.value || 0}`)
+                    .style('display', 'block')
+                    .style('left', (event.clientX + 15) + 'px')
+                    .style('top', (event.clientY + 15) + 'px');
+            })
+            .on('mousemove', function() {
+                const event = d3.event;
+                tooltip.style('left', (event.clientX + 15) + 'px')
+                    .style('top', (event.clientY + 15) + 'px');
+            })
+            .on('mouseout', function() {
+                d3.select(this).attr('opacity', 1);
                     tooltip.style('display', 'none');
                 });
 
-            // Simple legend showing attribute order (rings)
+            // Calculate the inner radius of the first ring (categories)
+            // Each ring takes up radius / number_of_attributes in height
+            const ringHeight = radius / attributes.length;
+            const centerCircleRadius = Math.max(10, ringHeight * 0.8); // 80% of first ring height
+            
+            // Add invisible center circle for zoom out (no visual, just clickable area)
+            g.append('circle')
+                .attr('r', centerCircleRadius)
+                .style('fill', 'transparent')
+                .style('cursor', 'pointer')
+                .on('click', () => focusOn(root));
+
+            // Zoom functionality
+            function focusOn(node) {
+                const transition = g.transition()
+                    .duration(750)
+                    .tween('scale', function() {
+                        const xd = d3.interpolate(x.domain(), [node.x0, node.x1]);
+                        const yd = d3.interpolate(y.domain(), [node.y0, radius]);
+                        const yr = d3.interpolate(y.range(), [node.y0 ? 40 : 0, radius]);
+                        return function(t) {
+                            x.domain(xd(t));
+                            y.domain(yd(t)).range(yr(t));
+                        };
+                    });
+
+                transition.selectAll('path')
+                    .attrTween('d', function(d) {
+                        return function() { return arc(d); };
+                    });
+            }            // Simple legend showing attribute order (rings)
             const legend = svg.append('g')
-                .attr('transform', `translate(${width + margin.left + 10}, ${margin.top})`);
+                .attr('transform', `translate(${width + margin.left + 30}, ${margin.top + 10})`);
 
             // Add title showing the selected year
             legend.append('text')
@@ -322,64 +388,69 @@ export default async (data) => {
                 .style('font-weight', 'bold')
                 .style('fill', '#222');
 
-            legend.selectAll('.attr-text')
+            // Add styled section title for ring order
+            legend.append('text')
+                .attr('y', 30)
+                .text('Ordre des anneaux')
+                .style('font-family', 'sans-serif')
+                .style('font-size', '12px')
+                .style('font-weight', '600')
+                .style('fill', '#555')
+                .style('text-decoration', 'underline');
+
+            // Add ring indicators with visual representation
+            const ringLegend = legend.selectAll('.ring-item')
                 .data(attributes)
-                .enter().append('text')
-                .attr('class', 'attr-text')
-                .attr('y', (d, i) => (i + 1) * 18 + 10)
-                .text((d, i) => `${i + 1}. ${d}`)
-                .style('font-family', 'sans-serif')
-                .style('font-size', '12px');
-
-            // Color legend: one swatch per first-level child (values of the first attribute)
-            const colorLegendOffsetY = (attributes.length + 1) * 18 + 20;
-            // Get all unique categories (3rd level) for the legend
-            const thirdLevel = [];
-            root.descendants().forEach(d => {
-                if (d.depth === 3) {
-                    if (!thirdLevel.find(item => item === d.data.name)) {
-                        thirdLevel.push(d.data.name);
-                    }
-                }
-            });
-            const colorDomain = thirdLevel;
-            color.domain(colorDomain);
-
-            console.log(`Nombre de catégories uniques dans le sunburst: ${colorDomain.length}`);
-
-            const colorLegend = svg.append('g')
-                .attr('transform', `translate(${width + margin.left + 10}, ${margin.top + colorLegendOffsetY})`)
-                .attr('class', 'color-legend');
-
-            const swatchSize = 12;
-            const rowHeight = 18;
-
-            const entries = colorLegend.selectAll('.legend-entry')
-                .data(colorDomain)
                 .enter().append('g')
-                .attr('class', 'legend-entry')
-                .attr('transform', (d, i) => `translate(0, ${i * rowHeight})`);
+                .attr('class', 'ring-item')
+                .attr('transform', (d, i) => `translate(0, ${50 + i * 28})`);
 
-            entries.append('rect')
-                .attr('width', swatchSize)
-                .attr('height', swatchSize)
-                .attr('y', -swatchSize + 4)
-                .attr('fill', d => color(d))
-                .attr('stroke', '#222');
+            ringLegend.append('circle')
+                .attr('cx', 8)
+                .attr('cy', 0)
+                .attr('r', 6)
+                .style('fill', 'none')
+                .style('stroke', '#666')
+                .style('stroke-width', '2');
 
-            entries.append('text')
-                .attr('x', swatchSize + 8)
-                .attr('y', 0)
-                .text(d => d)
+            ringLegend.append('text')
+                .attr('x', 8)
+                .attr('y', 4)
+                .attr('text-anchor', 'middle')
+                .text((d, i) => i + 1)
                 .style('font-family', 'sans-serif')
-                .style('font-size', '12px');
+                .style('font-size', '9px')
+                .style('font-weight', 'bold')
+                .style('fill', '#666');
+
+            ringLegend.append('text')
+                .attr('x', 22)
+                .attr('y', 4)
+                .text(d => ATTRIBUTE_LABELS[d] || d)
+                .style('font-family', 'sans-serif')
+                .style('font-size', '11px')
+                .style('fill', '#333');            
+            const colorLegendOffsetY = 50 + attributes.length * 28 + 20;
+            const categorySet = new Set();
+            
+            if (categoryDepth > 0) {
+                root.descendants().forEach(d => {
+                    if (d.depth === categoryDepth) categorySet.add(d.data.name);
+                });
+            }
+            
+            // Create a group for the color legend and use makeLegends with scaling
+            const colorLegendGroup = svg.append('g')
+                .attr('transform', `translate(${width + margin.left + 10}, ${margin.top + colorLegendOffsetY}) scale(0.6)`);
+
 
             console.log('Sunburst rendered for attributes:', attributes);
         }
 
         // Function to update sunburst based on current selections
-        function updateSunburst() {
-            const selectedYear = +yearSelect.node().value;
+        function updateSunburst(){
+            const selectedYear =+ yearSelect.node().value;
+            currentSelectedYear = selectedYear; // Save the current selection
             renderSunburst(selectedYear);
         }
 
@@ -388,9 +459,8 @@ export default async (data) => {
 
         // Initial checkbox state and render
         updateCheckboxStates();
-        renderSunburst(years[0]);
-
-    };
+        renderSunburst(currentSelectedYear);    
+        };
 
     // Initial render
     render();
