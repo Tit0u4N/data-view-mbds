@@ -100,12 +100,15 @@ export default async (data) => {
     const tooltip = d3.select("body").append("div")
         .style("opacity", 0)
         .attr("class", "tooltip")
-        .style("background-color", "white")
-        .style("border", "solid")
-        .style("border-width", "2px")
-        .style("border-radius", "5px")
-        .style("padding", "5px")
-        .style("position", "absolute");
+        .style("position", "absolute")
+        .style('pointer-events', 'none')
+        .style('padding', '10px 12px')
+        .style('background', 'rgba(0,0,0,0.9)')
+        .style('color', '#fff')
+        .style('font-size', '14px')
+        .style('font-family', 'sans-serif')
+        .style('border-radius', '6px')
+        .style('box-shadow', '0 2px 8px rgba(0,0,0,0.3)');
 
     const mouseover = function (d) {
         tooltip.style("opacity", 1);
@@ -115,7 +118,7 @@ export default async (data) => {
         const ratingText = d.rating !== undefined ? d.rating.toFixed(2) : "Pas de donnée";
         const countText = d.count > 0 ? `${d.count} jeux` : "0 jeux";
         tooltip
-            .html(`Année: ${d.year}<br>Catégorie: ${d.category}<br>Note Moyenne: ${ratingText}<br>Nombre de jeux: ${countText}`)
+            .html(`<strong>Année:</strong> ${d.year}<br><strong>Catégorie:</strong> ${d.category}<br><strong>Note Moyenne:</strong> ${ratingText}<br><strong>Nombre de jeux:</strong> ${countText}`)
             .style("left", (d3.event.pageX + 15) + "px")
             .style("top", (d3.event.pageY - 15) + "px");
     }

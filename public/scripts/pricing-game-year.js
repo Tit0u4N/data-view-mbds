@@ -121,7 +121,7 @@ export default function pricingGameYear(data) {
         .on("mouseover", function (d) {
             d3.select(this).style("stroke", "black").style("stroke-width", 2).style("opacity", 1);
             tooltip.transition().duration(200).style("opacity", .9);
-            tooltip.html(`Genre: ${d.genre}<br/>Year: ${d.year}<br/>Avg Price: ${d.avgPrice.toFixed(2)}<br/>Count: ${d.count}`)
+            tooltip.html(`<strong>Genre:</strong> ${d.genre}<br/><strong>Year:</strong> ${d.year}<br/><strong>Avg Price:</strong> ${d.avgPrice.toFixed(2)}<br/><strong>Count:</strong> ${d.count}`)
                 .style("left", (d3.event.pageX + 10) + "px")
                 .style("top", (d3.event.pageY - 28) + "px");
         })
@@ -290,14 +290,15 @@ export default function pricingGameYear(data) {
     tooltip = tooltip.enter().append("div")
         .attr("class", "tooltip-pricing")
         .style("position", "absolute")
-        .style("text-align", "center")
-        .style("padding", "12px") // Larger padding
-        .style("font", "14px Roboto, sans-serif") // Modern font
-        .style("background", "rgba(255, 255, 255, 0.95)") // Glassmorphism-ish
-        .style("border", "1px solid #eee")
-        .style("border-radius", "12px")
-        .style("box-shadow", "0 4px 12px rgba(0,0,0,0.1)") // Soft shadow
-        .style("pointer-events", "none")
+        .style('pointer-events', 'none')
+        .style('padding', '10px 12px')
+        .style('background', 'rgba(0,0,0,0.9)')
+        .style('color', '#fff')
+        .style('font-size', '14px')
+        .style('font-family', 'sans-serif')
+        .style('border-radius', '6px')
+        .style('box-shadow', '0 2px 8px rgba(0,0,0,0.3)')
+        .style('max-width', '300px')
         .style("opacity", 0)
         .merge(tooltip);
 }
