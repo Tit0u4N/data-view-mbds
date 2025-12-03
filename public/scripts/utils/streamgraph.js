@@ -117,6 +117,7 @@ export default function Streamgraph(data, keys, {
         .style('padding', '10px 12px')
         .style('background', 'rgba(0,0,0,0.9)')
         .style('color', '#fff')
+        .style('z-index', 900000000)
         .style('font-size', '14px')
         .style('font-family', 'sans-serif')
         .style('border-radius', '6px')

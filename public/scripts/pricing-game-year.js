@@ -292,6 +292,7 @@ export default function pricingGameYear(data) {
             .attr("class", "tooltip-pricing")
             .style("position", "absolute")
             .style('pointer-events', 'none')
+            .style('z-index', 900000000)
             .style('padding', '10px 12px')
             .style('background', 'rgba(0,0,0,0.9)')
             .style('color', '#fff')

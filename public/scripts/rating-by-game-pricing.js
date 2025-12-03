@@ -107,6 +107,7 @@ export default async (data) => {
         .style("opacity", 0)
         .attr("class", "tooltip")
         .style("position", "absolute")
+        .style('z-index', 900000000)
         .style('pointer-events', 'none')
         .style('padding', '10px 12px')
         .style('background', 'rgba(0,0,0,0.9)')
