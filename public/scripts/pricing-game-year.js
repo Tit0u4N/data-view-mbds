@@ -7,7 +7,7 @@ export default function pricingGameYear(data) {
     // Render function that accepts width and height
     const render = (containerWidth = CONTAINER_WIDTH, containerHeight = 500) => {
         // Dimensions
-        const margin = { top: 100, right: 150, bottom: 80, left: 40 };
+        const margin = { top: 100, right: 40, bottom: 80, left: 40 };
         const width = containerWidth - margin.left - margin.right;
         const height = containerHeight - margin.top - margin.bottom;
 
@@ -24,8 +24,6 @@ export default function pricingGameYear(data) {
             .style("font-family", "Roboto, sans-serif")
             .style("color", "#2c3e50")
             .style("margin-bottom", "20px");
-
-
 
         // Create SVG Container for the chart
         const svgContainer = container.append("div")
@@ -162,7 +160,8 @@ export default function pricingGameYear(data) {
         // 6. Price Slider
         let priceSelection = [0, width];
 
-        const brushHeight = 50; // Larger brush area
+        const brushHeight = 60; // Height matching date slider
+        const trackHeight = 6; // Thin track like date slider
         const brushGroup = svg.append("g")
             .attr("transform", `translate(0, -${margin.top - 20})`);
 
@@ -172,98 +171,87 @@ export default function pricingGameYear(data) {
             .attr("y", -margin.top + 10)
             .style("text-anchor", "middle")
             .style("font-size", "14px")
-            .style("font-family", "Roboto, sans-serif")
+            .style("font-family", "system-ui")
+            .style("font-weight", "500")
             .style("fill", "#555")
             .text("Filtre de prix");
 
-        // Brush Background Track
+        // 1. Visual Track (Background) - same as date slider
         brushGroup.append("rect")
+            .attr("class", "slider-track-bg")
+            .attr("x", 0)
+            .attr("y", brushHeight / 2 - trackHeight / 2)
             .attr("width", width)
-            .attr("height", brushHeight)
-            .attr("fill", "#ffefb0ff")
-            .attr("rx", 8) // Rounded corners
-            .attr("ry", 8);
+            .attr("height", trackHeight)
+            .attr("rx", trackHeight / 2)
+            .attr("fill", "#e9ecef");
 
-        // Brush Axis Group
+        // 2. Visual Selection (Foreground Track) - same as date slider
+        const visualSelection = brushGroup.append("rect")
+            .attr("class", "slider-track-fill")
+            .attr("y", brushHeight / 2 - trackHeight / 2)
+            .attr("height", trackHeight)
+            .attr("rx", trackHeight / 2)
+            .attr("fill", "#222")
+            .attr("pointer-events", "none");
+
+        // 3. Axis (Below) - same style as date slider
         const brushAxisGroup = brushGroup.append("g")
-            .attr("transform", `translate(0, ${brushHeight - 20})`); // Position axis inside/bottom of track
+            .attr("transform", `translate(0, ${brushHeight / 2 + 20})`)
+            .call(d3.axisBottom(navYScale).ticks(10).tickSize(0).tickPadding(10))
+            .call(g => g.select(".domain").remove())
+            .call(g => g.selectAll("text").attr("fill", "#999").style("font-weight", "500").style("font-family", "system-ui"));
 
-        // Initialize Brush
+        // 4. Initialize Brush (Invisible Interaction Layer)
         const brush = d3.brushX()
             .extent([[0, 0], [width, brushHeight]])
+            .handleSize(30)
             .on("brush end", brushed);
 
         const brushNode = brushGroup.append("g")
             .attr("class", "brush")
             .call(brush);
 
-        // Style the selection rect (modern look)
-        brushNode.select(".selection")
-            .attr("fill", "#ffb861ff")
-            .attr("fill-opacity", 0.5)
-            .attr("stroke", "#ff7d32ff")
-            .attr("stroke-width", 1)
-            .attr("rx", 4)
-            .attr("ry", 4);
+        // Hide default brush styling - same as date slider
+        brushNode.select(".selection").style("fill", "none").style("stroke", "none");
+        brushNode.select(".overlay").style("fill", "none");
+        brushNode.selectAll(".handle").style("fill", "none").style("stroke", "none");
 
-        // Custom Handles (Arrows)
-        // Define arrow paths (Clean modern arrows)
-        const leftArrow = "M 8,0 L 0,10 L 8,20"; // Simple chevron pointing left
-        const rightArrow = "M 0,0 L 8,10 L 0,20"; // Simple chevron pointing right
+        // 5. Custom Handles (Visuals) - same as date slider
+        const handleGroup = brushGroup.append("g")
+            .attr("pointer-events", "none");
 
-        const handleGroup = brushNode.selectAll(".handle--custom")
+        const handles = handleGroup.selectAll(".handle-circle")
             .data([{ type: "w" }, { type: "e" }])
-            .enter().append("g")
-            .attr("class", "handle--custom")
-            .style("cursor", "ew-resize");
-
-        // Handle Circle Background
-        handleGroup.append("circle")
-            .attr("r", 15)
+            .enter().append("circle")
+            .attr("class", "handle-circle")
+            .attr("r", 10)
             .attr("fill", "white")
-            .attr("stroke", "#ccc")
-            .attr("stroke-width", 1)
-            .style("filter", "drop-shadow(0px 2px 2px rgba(0,0,0,0.1))");
-
-        // Handle Arrow Icon
-        handleGroup.append("path")
-            .attr("d", d => d.type === "w" ? leftArrow : rightArrow)
-            .attr("fill", "none")
-            .attr("stroke", "#ff7700")
-            .attr("stroke-width", 2)
-            .attr("stroke-linecap", "round")
-            .attr("stroke-linejoin", "round")
-            .attr("transform", "translate(-4, -10)"); // Center the path in the circle
+            .attr("stroke", "#222")
+            .attr("stroke-width", 2.5)
+            .attr("cy", brushHeight / 2)
+            .style("filter", "drop-shadow(0 2px 3px rgba(0,0,0,0.2))");
 
         // Initial Render
-        updateBrushAxis();
         brushNode.call(brush.move, priceSelection);
-
-        function updateBrushAxis() {
-            brushAxisGroup.selectAll("*").remove();
-            brushAxisGroup.call(d3.axisBottom(navYScale).ticks(10).tickSize(0).tickPadding(10));
-            brushAxisGroup.select(".domain").remove();
-            brushAxisGroup.selectAll("text").style("fill", "#777").style("font-family", "Roboto, sans-serif");
-        }
 
         function brushed() {
             if (!d3.event.selection) return;
 
             const selection = d3.event.selection;
-            updateHandles(selection);
+
+            // Update Visual Selection
+            visualSelection
+                .attr("x", selection[0])
+                .attr("width", selection[1] - selection[0]);
+
+            // Update Visual Handles
+            handles.attr("cx", d => d.type === "w" ? selection[0] : selection[1]);
 
             // Store selection
             priceSelection = selection;
 
             updateChart();
-        }
-
-        function updateHandles(selection) {
-            handleGroup.attr("transform", (d, i) => {
-                const x = selection[i];
-                const yOffset = brushHeight / 2;
-                return `translate(${x}, ${yOffset})`;
-            });
         }
 
         function updateChart() {

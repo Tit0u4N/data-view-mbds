@@ -10,14 +10,12 @@ export default function makeNumberGameEvolution(data) {
     const render = (containerWidth = CONTAINER_WIDTH, containerHeight = 400) => {
         // Define dimension and SVG container
         const width = containerWidth;
-        const sidePanelWidth = 180;
         const height = containerHeight;
         const svg = d3.select(`#${containerId}`).attr("width", width).attr("height", height);
 
         // parse date
-        const parseDate = d3.timeParse("%d/%m/%Y %H:%M");
         data = data.map(d => {
-            const date = parseDate(d.dateGlobal);
+            const date = new Date(d.dateGlobal);
             return {
                 ...d,
                 date,
@@ -32,7 +30,7 @@ export default function makeNumberGameEvolution(data) {
 
         // Transform grouped data into an array suitable for stacking
         const dataByYearCategory = Object.keys(grouped).map(year => {
-            const row = { year: new Date(+year, 0, 1) };
+            const row = { year: new Date(Number(year), 0, 1) };
             categories.forEach(cat => {
                 row[cat] = grouped[year][cat] || 0;
             });

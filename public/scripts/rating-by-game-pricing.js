@@ -59,7 +59,7 @@ export default async (data) => {
         });
 
         // Define dimension and SVG container
-        const margin = { top: 50, right: 50, bottom: 130, left: 100 };
+        const margin = { top: 80, right: 50, bottom: 130, left: 100 };
         const width = containerWidth - margin.left - margin.right;
 
         // Adjust height to make cells more square-like
@@ -70,8 +70,18 @@ export default async (data) => {
         const svg = d3.select(`#${containerId}`)
             .attr("width", width + margin.left + margin.right)
             .attr("height", height + margin.top + margin.bottom)
-            .html("") // Clear previous content
-            .append("g")
+            .html(""); // Clear previous content
+
+        // Add title
+        svg.append("text")
+            .text("Heatmap des notes moyennes par catégorie et année")
+            .attr("x", (width + margin.left + margin.right) / 2)
+            .attr("y", 20)
+            .attr("font-size", "18px")
+            .attr("font-weight", "bold")
+            .attr("text-anchor", "middle");
+
+        const container = svg.append("g")
             .attr("transform", `translate(${margin.left},${margin.top})`);
 
         // Scales
@@ -90,7 +100,7 @@ export default async (data) => {
             .range(["white", "yellow", "darkred", "black"]);
 
         // Axes
-        svg.append("g")
+        container.append("g")
             .attr("transform", `translate(0,${height})`)
             .call(d3.axisBottom(x)) // Show all years
             .selectAll("text")
@@ -99,43 +109,43 @@ export default async (data) => {
             .attr("dy", ".15em")
             .attr("transform", "rotate(-65)");
 
-        svg.append("g")
+        container.append("g")
             .call(d3.axisLeft(y));
 
-    // Tooltip
-    const tooltip = d3.select("body").append("div")
-        .style("opacity", 0)
-        .attr("class", "tooltip")
-        .style("position", "absolute")
-        .style('z-index', 900000000)
-        .style('pointer-events', 'none')
-        .style('padding', '10px 12px')
-        .style('background', 'rgba(0,0,0,0.9)')
-        .style('color', '#fff')
-        .style('font-size', '14px')
-        .style('font-family', 'sans-serif')
-        .style('border-radius', '6px')
-        .style('box-shadow', '0 2px 8px rgba(0,0,0,0.3)');
+        // Tooltip
+        const tooltip = d3.select("body").append("div")
+            .style("opacity", 0)
+            .attr("class", "tooltip")
+            .style("position", "absolute")
+            .style('z-index', 900000000)
+            .style('pointer-events', 'none')
+            .style('padding', '10px 12px')
+            .style('background', 'rgba(0,0,0,0.9)')
+            .style('color', '#fff')
+            .style('font-size', '14px')
+            .style('font-family', 'sans-serif')
+            .style('border-radius', '6px')
+            .style('box-shadow', '0 2px 8px rgba(0,0,0,0.3)');
 
-    const mouseover = function (d) {
-        tooltip.style("opacity", 1);
-        d3.select(this).style("stroke", "black").style("opacity", 1);
-    }
-    const mousemove = function (d) {
-        const ratingText = d.rating !== undefined ? d.rating.toFixed(2) : "Pas de donnée";
-        const countText = d.count > 0 ? `${d.count} jeux` : "0 jeux";
-        tooltip
-            .html(`<strong>Année:</strong> ${d.year}<br><strong>Catégorie:</strong> ${d.category}<br><strong>Note Moyenne:</strong> ${ratingText}<br><strong>Nombre de jeux:</strong> ${countText}`)
-            .style("left", (d3.event.pageX + 15) + "px")
-            .style("top", (d3.event.pageY - 15) + "px");
-    }
-    const mouseleave = function (d) {
-        tooltip.style("opacity", 0);
-        d3.select(this).style("stroke", "none").style("opacity", 0.8);
-    }
+        const mouseover = function (d) {
+            tooltip.style("opacity", 1);
+            d3.select(this).style("stroke", "black").style("opacity", 1);
+        }
+        const mousemove = function (d) {
+            const ratingText = d.rating !== undefined ? d.rating.toFixed(2) : "Pas de donnée";
+            const countText = d.count > 0 ? `${d.count} jeux` : "0 jeux";
+            tooltip
+                .html(`<strong>Année:</strong> ${d.year}<br><strong>Catégorie:</strong> ${d.category}<br><strong>Note Moyenne:</strong> ${ratingText}<br><strong>Nombre de jeux:</strong> ${countText}`)
+                .style("left", (d3.event.pageX + 15) + "px")
+                .style("top", (d3.event.pageY - 15) + "px");
+        }
+        const mouseleave = function (d) {
+            tooltip.style("opacity", 0);
+            d3.select(this).style("stroke", "none").style("opacity", 0.8);
+        }
 
         // Draw Heatmap
-        svg.selectAll()
+        container.selectAll()
             .data(gridData, function (d) { return d.category + ':' + d.year; })
             .enter()
             .append("rect")
@@ -153,7 +163,7 @@ export default async (data) => {
 
         // Add text counts if range is small (<= 15 years)
         if (years.length <= 25) {
-            svg.selectAll(".count-label")
+            container.selectAll(".count-label")
                 .data(gridData)
                 .enter()
                 .append("text")
@@ -178,7 +188,7 @@ export default async (data) => {
         const legendSpacing = 80; // Reduced from 100 to bring legend closer to heatmap
 
         // Legend aligned to the left with label on the same line
-        const legend = svg.append("g")
+        const legend = container.append("g")
             .attr("transform", `translate(0, ${height + legendSpacing})`);
 
         // Add "Note moyenne" label on the same line as gradient
@@ -193,7 +203,7 @@ export default async (data) => {
         const gradientGroup = legend.append("g")
             .attr("transform", `translate(${labelWidth}, 0)`);
 
-        const defs = svg.append("defs");
+        const defs = container.append("defs");
         const linearGradient = defs.append("linearGradient")
             .attr("id", "linear-gradient");
 
@@ -249,7 +259,7 @@ export default async (data) => {
 
 
         // Labels
-        svg.append("text")
+        container.append("text")
             .attr("text-anchor", "middle")
             .attr("x", width / 2)
             .attr("y", height + 60) // Reduced from 60 to bring closer
@@ -257,7 +267,7 @@ export default async (data) => {
             .style("font-size", "14px")
             .style("font-weight", "600");
 
-        svg.append("text")
+        container.append("text")
             .attr("text-anchor", "middle")
             .attr("transform", "rotate(-90)")
             .attr("y", -75) // Reduced from -120 to bring closer to heatmap
