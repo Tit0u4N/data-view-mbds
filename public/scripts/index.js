@@ -4,6 +4,7 @@ import { initCategoryMultiselect } from "./utils/category-multiselect.js";
 import ratingByGamePricing from "./rating-by-game-pricing.js";
 import makeNumberGameEvolution from "./free-paid-total-games-evolution.js";
 import pricingGameYear from "./pricing-game-year.js";
+import sunburstWithDiffAttributes from "./sunburst-with-diff-attributes.js";
 
 // Load data and run the visualizationr
 const data = await d3.csv('./data.csv');
@@ -12,6 +13,7 @@ const data = await d3.csv('./data.csv');
 ratingByGamePricing(data);
 makeNumberGameEvolution(data);
 pricingGameYear(data);
+sunburstWithDiffAttributes(data);
 
 // State
 let lastDateFilteredData = data;
@@ -31,6 +33,7 @@ const updateVisualization = () => {
     ratingByGamePricing(finalData);
     makeNumberGameEvolution(finalData);
     pricingGameYear(finalData);
+    sunburstWithDiffAttributes(finalData);
 };
 
 // FILTERS
