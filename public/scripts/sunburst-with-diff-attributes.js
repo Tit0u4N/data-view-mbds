@@ -28,7 +28,7 @@ export default async (data) => {
     const render = (containerWidth = CONTAINER_WIDTH, containerHeight = 420) => {
 
         // Define dimension and SVG container
-        const margin = { top: 20, right: 140, bottom: 20, left: 20 };
+        const margin = { top: 50, right: 140, bottom: 20, left: 20 };
         const width = containerWidth - margin.left - margin.right;
         const height = containerHeight - margin.top - margin.bottom;
         const totalWidth = containerWidth;
@@ -100,7 +100,7 @@ export default async (data) => {
         }
 
         // Create year selector dropdown above the chart
-        const selectorContainer = container.insert('div', ':first-child')
+        const selectorContainer = container.append('div')
             .style('text-align', 'center')
             .style('margin-bottom', '10px')
             .style('padding', '10px');
@@ -253,6 +253,17 @@ export default async (data) => {
             // Set up drawing area
             const radius = Math.min(width, height) / 2;
             svg.selectAll('*').remove();
+            
+            // Add title in SVG
+            svg.append('text')
+                .attr('x', totalWidth / 2)
+                .attr('y', 25)
+                .attr('text-anchor', 'middle')
+                .style('font-family', 'sans-serif')
+                .style('font-size', '18px')
+                .style('font-weight', 'bold')
+                .style('fill', '#333')
+                .text('Distribution des jeux selon différents attributs');
             
             // Define clipping zone for sunburst to keep it contained
             const sunburstClipId = 'sunburst-clip-' + Math.random().toString(36).substr(2, 9);
