@@ -1,7 +1,6 @@
 import Streamgraph from './utils/streamgraph.js';
-import { getColor, getPricingTypeColor } from './utils/color-manager.js';
-import makeLegends from "./utils/make-lengends.js";
-import { addFullscreenButton, CONTAINER_WIDTH } from './utils/fullscreen-manager.js';
+import { getColor } from './utils/color-manager.js';
+import {addFullscreenButton, CONTAINER_WIDTH, renderAtCorrectSize} from './utils/fullscreen-manager.js';
 
 export default function makeNumberGameEvolution(data) {
     const containerId = 'free-paid-total-games-evolution';
@@ -64,31 +63,13 @@ export default function makeNumberGameEvolution(data) {
     };
 
     // Initial render
-    render();
+    renderAtCorrectSize(containerId, render)
 
     // Add fullscreen button - with a slight delay to ensure DOM is ready
     setTimeout(() => addFullscreenButton(containerId, (w, h) => render(w, h)), 100);
 }
 
 
-function makeDataByYearAndPricingType(data) {
-    const categories = ["Free", "Paid"];
-
-    // Group data by year and category
-    const grouped = {};
-
-    data.forEach(d => {
-        if (!grouped[d.year]) {
-            grouped[d.year] = {};
-        }
-        if (d.isFree === 'TRUE')
-            !grouped[d.year]["Free"] ? grouped[d.year]["Free"] = 1 : grouped[d.year]["Free"] += 1;
-        else
-            !grouped[d.year]["Paid"] ? grouped[d.year]["Paid"] = 1 : grouped[d.year]["Paid"] += 1;
-    });
-
-    return { grouped, categories };
-}
 
 function makeDataByYearAndCategory(data) {
     // make categories list

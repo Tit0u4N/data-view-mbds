@@ -1,4 +1,4 @@
-import { addFullscreenButton, CONTAINER_WIDTH } from './utils/fullscreen-manager.js';
+import {addFullscreenButton, CONTAINER_WIDTH, renderAtCorrectSize} from './utils/fullscreen-manager.js';
 
 export default async (data) => {
     const containerId = 'rating-by-game-pricing';
@@ -278,7 +278,7 @@ export default async (data) => {
     };
 
     // Initial render
-    render();
+    renderAtCorrectSize(containerId, render)
 
     // Add fullscreen button
     addFullscreenButton(containerId, render);

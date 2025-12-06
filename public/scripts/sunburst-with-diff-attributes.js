@@ -1,5 +1,5 @@
 import { getColor } from "./utils/color-manager.js";
-import { addFullscreenButton, CONTAINER_WIDTH } from './utils/fullscreen-manager.js';
+import {addFullscreenButton, CONTAINER_WIDTH, renderAtCorrectSize} from './utils/fullscreen-manager.js';
 
 // Store the currently selected year across re-renders
 let currentSelectedYear = null;
@@ -474,7 +474,7 @@ export default async (data) => {
         };
 
     // Initial render
-    render();
+    renderAtCorrectSize(containerId, render)
 
     // Add fullscreen button - with a slight delay to ensure DOM is ready
     setTimeout(() => addFullscreenButton(containerId, (w, h) => render(w, h)), 100);
