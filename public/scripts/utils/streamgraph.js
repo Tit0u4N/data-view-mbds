@@ -148,7 +148,7 @@ export default function Streamgraph(data, keys, {
                 .attr("y1", marginTop)
                 .attr("y2", height - marginBottom);
 
-            let tooltipContent = `<strong>Year:</strong> ${d3.timeFormat("%Y")(nearest.date)}<br/>`;
+            let tooltipContent = `<strong>Année:</strong> ${d3.timeFormat("%Y")(nearest.date)}<br/>`;
             keys.forEach(key => {
                 const value = nearest.data[key] || 0;
                 if(value!==0)

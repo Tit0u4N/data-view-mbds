@@ -123,7 +123,7 @@ export default function pricingGameYear(data) {
             .on("mouseover", function (d) {
                 d3.select(this).style("stroke", "black").style("stroke-width", 2).style("opacity", 1);
                 tooltip.transition().duration(200).style("opacity", .9);
-                tooltip.html(`<strong>Genre:</strong> ${d.genre}<br/><strong>Year:</strong> ${d.year}<br/><strong>Avg Price:</strong> ${d.avgPrice.toFixed(2)}<br/><strong>Count:</strong> ${d.count}`)
+                tooltip.html(`<strong>Genre:</strong> ${d.genre}<br/><strong>Année:</strong> ${d.year}<br/><strong>Prix moyenne:</strong> ${d.avgPrice.toFixed(2)}<br/><strong>Nombre:</strong> ${d.count}`)
                     .style("left", (d3.event.pageX + 10) + "px")
                     .style("top", (d3.event.pageY - 28) + "px");
             })
