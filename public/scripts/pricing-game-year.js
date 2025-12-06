@@ -146,6 +146,7 @@ export default function pricingGameYear(data) {
             .attr("y", height + 50)
             .style("text-anchor", "middle")
             .style("font-size", "14px")
+            .style("font-weight", "600")
             .text("Année");
 
         svg.append("text")
@@ -155,6 +156,7 @@ export default function pricingGameYear(data) {
             .attr("dy", "1em")
             .style("text-anchor", "middle")
             .style("font-size", "14px")
+            .style("font-weight", "600")
             .text("Prix Moyen (€/$)");
 
         // 6. Price Slider

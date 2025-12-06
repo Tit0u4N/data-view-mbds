@@ -59,7 +59,7 @@ export default function makeNumberGameEvolution(data) {
             .attr("text-anchor", "middle")
             .attr("font-size", "18px")
             .attr("font-weight", "bold")
-            .text("Evolution du nombre de jeu par année");
+            .text("Evolution du nombre de jeu par année et par genre");
     };
 
     // Initial render
