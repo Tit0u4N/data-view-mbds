@@ -122,7 +122,8 @@ export default function Streamgraph(data, keys, {
         .style('font-family', 'sans-serif')
         .style('border-radius', '6px')
         .style('box-shadow', '0 2px 8px rgba(0,0,0,0.3)')
-        .style('max-width', '300px')
+        .style('max-width', '120px')
+        .style('width', '120px')
         .style("opacity", 0)
         .merge(tooltip);
 
@@ -155,9 +156,14 @@ export default function Streamgraph(data, keys, {
                     tooltipContent += `<span style="color:${colorScale(key)};">&#9679;</span> <strong>${key}:</strong> ${value.toLocaleString("en-US")}<br/>`;
             });
 
+            let xPosPage = d3.event.pageX + 15;
+            if(xPosPage + 200 > window.innerWidth) {
+                xPosPage = d3.event.pageX - 160;
+            }
+
             tooltip
                 .html(tooltipContent)
-                .style("left", (d3.event.pageX + 15) + "px")
+                .style("left", (xPosPage) + "px")
                 .style("top", (d3.event.pageY - 15) + "px")
                 .transition().duration(200).style("opacity", 1);
         })
