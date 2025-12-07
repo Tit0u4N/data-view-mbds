@@ -122,8 +122,8 @@ export default function Streamgraph(data, keys, {
         .style('font-family', 'sans-serif')
         .style('border-radius', '6px')
         .style('box-shadow', '0 2px 8px rgba(0,0,0,0.3)')
-        .style('max-width', '120px')
-        .style('width', '120px')
+        .style('max-width', '140px')
+        .style('width', '140px')
         .style("opacity", 0)
         .merge(tooltip);
 
