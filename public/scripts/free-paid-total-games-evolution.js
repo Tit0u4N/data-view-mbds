@@ -2,11 +2,16 @@ import Streamgraph from './utils/streamgraph.js';
 import { getColor } from './utils/color-manager.js';
 import {addFullscreenButton, CONTAINER_WIDTH, renderAtCorrectSize} from './utils/fullscreen-manager.js';
 
+let savedData;
+
 export default function makeNumberGameEvolution(data) {
     const containerId = 'free-paid-total-games-evolution';
+    savedData = data;
 
     // Render function that accepts width and height
-    const render = (containerWidth = CONTAINER_WIDTH, containerHeight = 400) => {
+    const render = (data = savedData, containerWidth = CONTAINER_WIDTH, containerHeight = 400) => {
+        // Save new data for fullscreen toggles
+        savedData = data;
         // Define dimension and SVG container
         const width = containerWidth;
         const height = containerHeight;
@@ -62,11 +67,17 @@ export default function makeNumberGameEvolution(data) {
             .text("Evolution du nombre de jeu par année et par catégorie");
     };
 
+    // Function to render with saved data at correct size
+    const renderFn = (newData) => renderAtCorrectSize(containerId, render, newData);
+
     // Initial render
-    renderAtCorrectSize(containerId, render)
+    renderFn(data);
 
     // Add fullscreen button - with a slight delay to ensure DOM is ready
-    setTimeout(() => addFullscreenButton(containerId, (w, h) => render(w, h)), 100);
+    setTimeout(() => addFullscreenButton(containerId, () => renderFn(savedData)), 100);
+
+    // Return a function that can be called to re-render with new data
+    return renderFn;
 }
 
 

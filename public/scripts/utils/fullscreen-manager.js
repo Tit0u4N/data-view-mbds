@@ -11,16 +11,17 @@ export let fullscreen_status = {};
  * Adds a fullscreen button to a diagram container
  * @param {string} containerId - ID of the container element (without #)
  * @param {Function} renderCallback - Function to re-render the diagram with new dimensions (width, height)
+ * @param {any} data - Data to be passed to the renderCallback (since we don't manipulate it here we don't type it)
  */
 
-export function renderAtCorrectSize(containerId, renderCallback) {
+export function renderAtCorrectSize(containerId, renderCallback, data) {
     const containerWidth = window.innerWidth / 2 - 80;
     const fullscreenWidth = window.innerWidth - 80;
     const fullscreenHeight = window.innerHeight - 280;
     if (fullscreen_status[containerId]) {
-        renderCallback(fullscreenWidth, fullscreenHeight);
+        renderCallback(data, fullscreenWidth, fullscreenHeight)
     } else {
-        renderCallback(containerWidth);
+        renderCallback(data, containerWidth)
     }
 }
 
@@ -96,7 +97,7 @@ export function addFullscreenButton(containerId, renderCallback) {
 
         // Re-render diagram at fullscreen size
         fullscreen_status[containerId] = true;
-        renderAtCorrectSize(containerId, renderCallback);
+        renderCallback();
 
         // Add ESC key listener
         d3.select('body').on('keydown.fullscreen', (event) => {
@@ -121,7 +122,7 @@ export function addFullscreenButton(containerId, renderCallback) {
 
         // Re-render diagram at original size
         fullscreen_status[containerId]  = false;
-        renderAtCorrectSize(containerId, renderCallback);
+        renderCallback();
 
         // Remove ESC key listener
         d3.select('body').on('keydown.fullscreen', null);

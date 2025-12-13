@@ -10,10 +10,10 @@ import sunburstWithDiffAttributes from "./sunburst-with-diff-attributes.js";
 const data = await d3.csv('./data.csv');
 
 // Initial render
-ratingByGamePricing(data);
-makeNumberGameEvolution(data);
-pricingGameYear(data);
-sunburstWithDiffAttributes(data);
+const renderRating= ratingByGamePricing(data);
+const renderEvolution = makeNumberGameEvolution(data);
+const renderPricing = pricingGameYear(data);
+const renderSunburst = sunburstWithDiffAttributes(data);
 
 // State
 let lastDateFilteredData = data;
@@ -30,10 +30,10 @@ const updateVisualization = () => {
     // We apply the other filters on top of it
     const finalData = filterData(lastDateFilteredData, filters);
 
-    ratingByGamePricing(finalData);
-    makeNumberGameEvolution(finalData);
-    pricingGameYear(finalData);
-    sunburstWithDiffAttributes(finalData);
+    renderRating(finalData);
+    renderEvolution(finalData);
+    renderPricing(finalData);
+    renderSunburst(finalData);
 };
 
 // FILTERS

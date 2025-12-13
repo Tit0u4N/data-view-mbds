@@ -1,10 +1,15 @@
 import {addFullscreenButton, CONTAINER_WIDTH, renderAtCorrectSize} from './utils/fullscreen-manager.js';
 
-export default async (data) => {
+let savedData;
+
+export default (data) => {
     const containerId = 'rating-by-game-pricing';
+    savedData = data;
 
     // Render function that accepts width and height
-    const render = (containerWidth = CONTAINER_WIDTH, containerHeight = 400) => {
+    const render = (data = savedData, containerWidth = CONTAINER_WIDTH, containerHeight = 400) => {
+        // Save new data for fullscreen toggles
+        savedData = data;
 
         // Process data first to determine dimensions
         const processedData = data.map(d => {
@@ -275,11 +280,17 @@ export default async (data) => {
             .text("Catégorie")
             .style("font-size", "14px")
             .style("font-weight", "600");
-    };
+    }
+
+    // Function to render with saved data at correct size
+    const renderFn = (newData) => renderAtCorrectSize(containerId, render, newData);
 
     // Initial render
-    renderAtCorrectSize(containerId, render)
+    renderFn(data);
 
-    // Add fullscreen button
-    addFullscreenButton(containerId, render);
+    // Add fullscreen button - with a slight delay to ensure DOM is ready
+    setTimeout(() => addFullscreenButton(containerId, () => renderFn(savedData)), 100);
+
+    // Return a function that can be called to re-render with new data
+    return renderFn;
 }

@@ -1,11 +1,16 @@
 import { getColor } from "./utils/color-manager.js";
 import {addFullscreenButton, CONTAINER_WIDTH, renderAtCorrectSize} from './utils/fullscreen-manager.js';
 
+let savedData = null;
+
 export default function pricingGameYear(data) {
     const containerId = 'pricing-game-year';
+    savedData = data;
 
     // Render function that accepts width and height
-    const render = (containerWidth = CONTAINER_WIDTH, containerHeight = 500) => {
+    const render = (data = savedData, containerWidth = CONTAINER_WIDTH, containerHeight = 500) => {
+        // Save new data for fullscreen toggles
+        savedData = data;
         // Dimensions
         const margin = { top: 100, right: 40, bottom: 80, left: 40 };
         const width = containerWidth - margin.left - margin.right;
@@ -295,9 +300,15 @@ export default function pricingGameYear(data) {
             .merge(tooltip);
     };
 
-    // Initial render
-    renderAtCorrectSize(containerId, render)
+    // Function to render with saved data at correct size
+    const renderFn = (newData) => renderAtCorrectSize(containerId, render, newData);
 
-    // Add fullscreen button  - with a slight delay to ensure DOM is ready
-    setTimeout(() => addFullscreenButton(containerId, (w, h) => render(w, h)), 100);
+    // Initial render
+    renderFn(data);
+
+    // Add fullscreen button - with a slight delay to ensure DOM is ready
+    setTimeout(() => addFullscreenButton(containerId, () => renderFn(savedData)), 100);
+
+    // Return a function that can be called to re-render with new data
+    return renderFn;
 }
